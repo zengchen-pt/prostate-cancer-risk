@@ -234,8 +234,8 @@
             background: white;
             border-radius: 28px;
             width: 90%;
-            max-width: 500px;
-            max-height: 70vh;
+            max-width: 600px;
+            max-height: 80vh;
             overflow-y: auto;
             padding: 24px;
         }
@@ -270,6 +270,12 @@
     <div class="main-grid">
         <div class="form-section">
             <form id="riskForm">
+                <!-- 新增：检查号字段 -->
+                <div class="form-group">
+                    <label>检查号 (Check ID)</label>
+                    <input type="text" id="checkId" placeholder="例如：P20240001 或患者病历号" autocomplete="off">
+                    <div class="inline-hint">建议填写唯一标识，便于溯源</div>
+                </div>
                 <div class="row-2cols">
                     <div class="form-group">
                         <label class="required">年龄 (岁)</label>
@@ -419,14 +425,18 @@
     <div class="history-content">
         <h3>📋 评估历史记录</h3>
         <div id="historyList"></div>
-        <button id="clearHistoryBtn" style="margin-top: 16px; background:#f44336;">清空历史</button>
-        <button id="closeHistoryBtn" style="background:#94a3b8;">关闭</button>
+        <div style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 12px;">
+            <button id="downloadHistoryBtn" style="background:#2e7d32;">📥 下载结果</button>
+            <button id="clearHistoryBtn" style="background:#f44336;">🗑️ 清空历史</button>
+            <button id="closeHistoryBtn" style="background:#94a3b8;">❌ 关闭</button>
+        </div>
     </div>
 </div>
 
 <script>
     (function() {
         // 表单元素
+        const checkIdInput = document.getElementById('checkId');
         const ageInput = document.getElementById('age');
         const tpsaInput = document.getElementById('tpsa');
         const fpsaInput = document.getElementById('fpsa');
@@ -559,7 +569,7 @@
             return null;
         }
 
-        // 历史记录
+        // 历史记录（最大200条）
         let historyRecords = [];
         function loadHistory() {
             try {
@@ -568,16 +578,14 @@
                 else historyRecords = [];
             } catch(e) { historyRecords = []; }
         }
-        function saveRecord(totalScore, riskLevel, age, tpsa, psadVal, nlrVal, dreVal) {
-            let record = {
-                timestamp: new Date().toLocaleString(),
-                totalScore, riskLevel, age, tpsa: tpsa.toFixed(2),
-                psad: psadVal ? psadVal.toFixed(3) : '—', nlr: nlrVal ? nlrVal.toFixed(2) : '—', dre: dreVal
-            };
+        
+        // 保存一条完整记录
+        function addRecord(record) {
             historyRecords.unshift(record);
-            if (historyRecords.length > 20) historyRecords.pop();
+            if (historyRecords.length > 200) historyRecords.pop();
             localStorage.setItem('pca_risk_history', JSON.stringify(historyRecords));
         }
+
         function displayHistory() {
             let listDiv = document.getElementById('historyList');
             if (!listDiv) return;
@@ -587,24 +595,117 @@
             }
             let html = '<ul style="list-style: none; padding: 0;">';
             for (let r of historyRecords) {
-                html += `<li style="border-bottom:1px solid #e2e8f0; padding:10px 0;">${r.timestamp}<br>总分：${r.totalScore}(${r.riskLevel}) | PSA:${r.tpsa} | PSAD:${r.psad} | 年龄:${r.age}</li>`;
+                html += `<li style="border-bottom:1px solid #e2e8f0; padding:10px 0;">
+                            <strong>${r.checkId || '无检查号'}</strong> | ${r.timestamp}<br>
+                            总分：${r.totalScore}(${r.riskLevel}) | PSA:${r.tpsa} | PSAD:${r.psad} | 年龄:${r.age}
+                         </li>`;
             }
             html += '</ul>';
             listDiv.innerHTML = html;
         }
+        
         function clearAllHistory() {
             historyRecords = [];
             localStorage.removeItem('pca_risk_history');
             displayHistory();
         }
 
+        // 导出CSV（完整数据，无乱码）
+        function exportHistoryToCSV() {
+            if (historyRecords.length === 0) {
+                alert("暂无历史记录可导出！");
+                return;
+            }
+            // 定义所有字段的表头（覆盖全部输入和评分明细）
+            const headers = [
+                "检查号", "时间戳", "年龄(岁)", "总PSA(ng/mL)", "游离PSA(ng/mL)", 
+                "上下径(cm)", "左右径(cm)", "前后径(cm)", "计算体积(mL)", "PSAD(ng/mL³)",
+                "中性粒细胞(10^9/L)", "淋巴细胞(10^9/L)", "NLR", "单核细胞(10^9/L)", "MLR", "血小板(10^9/L)",
+                "DRE结果", "BMI(kg/m²)", "吸烟指数(支·年)", "高血压", "糖尿病", "高脂血症",
+                "PSAD分值", "年龄分值", "NLR分值", "DRE分值", "MLR分值", "联合指数分值", "选填加分", "总分", "风险等级", "建议"
+            ];
+            
+            const rows = historyRecords.map(record => [
+                record.checkId || "",
+                record.timestamp,
+                record.age,
+                record.tpsa,
+                record.fpsa,
+                record.apDiam,
+                record.lrDiam,
+                record.paDiam,
+                record.pv,
+                record.psad,
+                record.neut,
+                record.lymph,
+                record.nlr,
+                record.mono,
+                record.mlr,
+                record.plt,
+                record.dre,
+                record.bmi,
+                record.smoking,
+                record.hypertension ? "是" : "否",
+                record.diabetes ? "是" : "否",
+                record.hyperlipidemia ? "是" : "否",
+                record.psadScore,
+                record.ageScore,
+                record.nlrScore,
+                record.dreScore,
+                record.mlrScore,
+                record.compositeScore,
+                record.extraScore,
+                record.totalScore,
+                record.riskLevel,
+                record.advice
+            ]);
+            
+            // 将每行数据转换为 CSV 行（处理可能的逗号、换行等）
+            const escapeCSV = (cell) => {
+                if (cell === undefined || cell === null) return "";
+                let str = String(cell);
+                if (str.includes(",") || str.includes("\"") || str.includes("\n")) {
+                    str = "\"" + str.replace(/"/g, "\"\"") + "\"";
+                }
+                return str;
+            };
+            
+            const csvRows = [headers.map(escapeCSV).join(",")];
+            for (let row of rows) {
+                csvRows.push(row.map(escapeCSV).join(","));
+            }
+            const csvContent = csvRows.join("\n");
+            // 添加 BOM 以解决中文乱码
+            const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.href = url;
+            link.setAttribute("download", `前列腺癌筛查记录_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
         function computeRisk() {
+            let checkId = checkIdInput.value.trim();
             let age = parseInt(ageInput.value);
             let tpsa = parseFloat(tpsaInput.value);
+            let fpsa = parseFloat(fpsaInput.value);
+            let ap = parseFloat(apDiam.value);
+            let lr = parseFloat(lrDiam.value);
+            let pa = parseFloat(paDiam.value);
             let pv = parseFloat(pvHidden.value);
             let neut = parseFloat(neutInput.value);
             let lymph = parseFloat(lymphInput.value);
+            let mono = parseFloat(monoInput.value);
+            let plt = parseFloat(pltInput.value);
             let dreVal = dreSelect.value;
+            let bmi = parseFloat(bmiInput.value);
+            let smoking = parseFloat(smokingInput.value);
+            let hypertension = htnCheck.checked;
+            let diabetes = dmCheck.checked;
+            let hyperlipidemia = hlpCheck.checked;
 
             if (isNaN(age) || age < 40 || age > 100) { alert("请输入有效年龄 (40-100岁)"); return; }
             if (isNaN(tpsa) || tpsa < 0) { alert("请输入有效的总PSA值 (≥0)"); return; }
@@ -614,7 +715,7 @@
 
             let psad = tpsa / pv;
             let nlr = neut / lymph;
-            let mlr = getMlr();
+            let mlr = (isNaN(mono) || lymph <= 0) ? null : mono / lymph;
             let compositeRes = getFtPsadComposite();
 
             let psadScore = getPsadScore(psad);
@@ -623,11 +724,10 @@
             let dreScore = getDreScore(dreVal);
             let mlrScore = (mlr !== null) ? getMlrScore(mlr) : 0;
             let compositeScore = compositeRes.score;
-            let bmi = parseFloat(bmiInput.value);
-            let smoking = parseFloat(smokingInput.value);
-            let extra = getExtraScore(bmi, smoking, htnCheck.checked, dmCheck.checked, hlpCheck.checked);
+            let extra = getExtraScore(bmi, smoking, hypertension, diabetes, hyperlipidemia);
             let total = psadScore + ageScore + nlrScore + dreScore + mlrScore + compositeScore + extra;
 
+            // 更新 UI 明细
             detailPsad.innerText = psadScore;
             detailAge.innerText = ageScore;
             detailNlr.innerText = nlrScore;
@@ -646,10 +746,46 @@
             adviceTextDiv.innerText = advice;
             riskCard.className = `risk-card ${cardClass}`;
 
-            saveRecord(total, level, age, tpsa, psad, nlr, dreVal);
+            // 构建完整记录对象
+            const record = {
+                checkId: checkId,
+                timestamp: new Date().toLocaleString(),
+                age: age,
+                tpsa: tpsa.toFixed(2),
+                fpsa: isNaN(fpsa) ? '' : fpsa.toFixed(2),
+                apDiam: ap.toFixed(1),
+                lrDiam: lr.toFixed(1),
+                paDiam: pa.toFixed(1),
+                pv: pv.toFixed(1),
+                psad: psad.toFixed(3),
+                neut: neut.toFixed(1),
+                lymph: lymph.toFixed(1),
+                nlr: nlr.toFixed(2),
+                mono: isNaN(mono) ? '' : mono.toFixed(1),
+                mlr: mlr !== null ? mlr.toFixed(3) : '',
+                plt: isNaN(plt) ? '' : plt.toFixed(0),
+                dre: dreVal === 'normal' ? '正常' : (dreVal === 'suspicious' ? '可疑结节' : '质硬'),
+                bmi: isNaN(bmi) ? '' : bmi.toFixed(1),
+                smoking: isNaN(smoking) ? '' : smoking,
+                hypertension: hypertension,
+                diabetes: diabetes,
+                hyperlipidemia: hyperlipidemia,
+                psadScore: psadScore,
+                ageScore: ageScore,
+                nlrScore: nlrScore,
+                dreScore: dreScore,
+                mlrScore: mlrScore,
+                compositeScore: compositeScore,
+                extraScore: extra,
+                totalScore: total,
+                riskLevel: level,
+                advice: advice
+            };
+            addRecord(record);
         }
 
         function resetForm() {
+            checkIdInput.value = '';
             ageInput.value = '65';
             tpsaInput.value = '6.5';
             fpsaInput.value = '1.2';
@@ -680,6 +816,7 @@
         document.getElementById('calcBtn').addEventListener('click', computeRisk);
         document.getElementById('resetBtn').addEventListener('click', resetForm);
         document.getElementById('historyBtn').addEventListener('click', showHistoryModal);
+        document.getElementById('downloadHistoryBtn').addEventListener('click', exportHistoryToCSV);
         document.getElementById('closeHistoryBtn').addEventListener('click', () => { document.getElementById('historyModal').style.display = 'none'; });
         document.getElementById('clearHistoryBtn').addEventListener('click', () => { if(confirm('确定清空所有历史记录吗？')) clearAllHistory(); });
 
