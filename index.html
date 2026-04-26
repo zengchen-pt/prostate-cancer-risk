@@ -270,13 +270,11 @@
     <div class="main-grid">
         <div class="form-section">
             <form id="riskForm">
-                <!-- 检查号（必填） -->
                 <div class="form-group">
                     <label class="required">检查号 (Check ID)</label>
-                    <input type="text" id="checkId" placeholder="例如：P20240001 或患者病历号" autocomplete="off" required>
-                    <div class="inline-hint">唯一标识，必填</div>
+                    <input type="text" id="checkId" placeholder="例如：P20240001 或患者病历号" autocomplete="off">
+                    <div class="inline-hint">建议填写，便于识别</div>
                 </div>
-                <!-- 患者姓名 -->
                 <div class="form-group">
                     <label>患者姓名</label>
                     <input type="text" id="patientName" placeholder="请输入患者姓名" autocomplete="off">
@@ -318,7 +316,6 @@
                         <div class="inline-hint">测算公式：体积(mL)=上下径×左右径×前后径×0.52</div>
                     </div>
                 </div>
-                <!-- 隐藏的PV输入框，用于向后兼容JS逻辑 -->
                 <input type="hidden" id="pv" value="35.1">
                 <div class="form-group">
                     <label>📐 计算体积 (PV, mL)</label>
@@ -384,7 +381,6 @@
                         <label><input type="checkbox" id="hyperlipidemia"> 高脂血症</label>
                     </div>
                     
-                    <!-- 磁共振成像（MRI）：初始“请选择” -->
                     <div class="form-group" style="margin-top: 16px;">
                         <label>磁共振成像 (MRI)</label>
                         <select id="mriStatus">
@@ -398,7 +394,6 @@
                         </div>
                     </div>
                     
-                    <!-- 穿刺活检：初始“请选择” -->
                     <div class="form-group" style="margin-top: 16px;">
                         <label>穿刺活检</label>
                         <select id="biopsyStatus">
@@ -409,6 +404,7 @@
                         <div id="biopsyTimesDiv" style="display: none; margin-top: 8px;">
                             <label>活检次数</label>
                             <select id="biopsyTimes">
+                                <option value="" selected disabled>请选择</option>
                                 <option value="1">1次</option>
                                 <option value="2">2次</option>
                                 <option value="3">3次</option>
@@ -475,7 +471,7 @@
 
 <script>
     (function() {
-        // 表单元素
+        // ---------- DOM 元素 ----------
         const checkIdInput = document.getElementById('checkId');
         const patientNameInput = document.getElementById('patientName');
         const ageInput = document.getElementById('age');
@@ -496,8 +492,6 @@
         const htnCheck = document.getElementById('hypertension');
         const dmCheck = document.getElementById('diabetes');
         const hlpCheck = document.getElementById('hyperlipidemia');
-        
-        // MRI 和活检相关元素
         const mriStatusSelect = document.getElementById('mriStatus');
         const mriResultDiv = document.getElementById('mriResultDiv');
         const mriResultInput = document.getElementById('mriResult');
@@ -505,36 +499,6 @@
         const biopsyTimesDiv = document.getElementById('biopsyTimesDiv');
         const biopsyTimesSelect = document.getElementById('biopsyTimes');
         
-        // 控制 MRI 结果输入框显示/隐藏，并清空输入值
-        function toggleMriResult() {
-            if (mriStatusSelect.value === 'yes') {
-                mriResultDiv.style.display = 'block';
-            } else {
-                mriResultDiv.style.display = 'none';
-                mriResultInput.value = '';
-            }
-        }
-        // 控制活检次数下拉框显示/隐藏，并重置次数
-        function toggleBiopsyTimes() {
-            if (biopsyStatusSelect.value === 'yes') {
-                biopsyTimesDiv.style.display = 'block';
-            } else {
-                biopsyTimesDiv.style.display = 'none';
-                biopsyTimesSelect.value = '1';
-            }
-        }
-        mriStatusSelect.addEventListener('change', function() {
-            toggleMriResult();
-            computeRisk();
-        });
-        biopsyStatusSelect.addEventListener('change', function() {
-            toggleBiopsyTimes();
-            computeRisk();
-        });
-        // 初始状态（请选择）：隐藏子选项
-        toggleMriResult();
-        toggleBiopsyTimes();
-
         // 显示元素
         const psadSpan = document.getElementById('psadDisplay');
         const nlrSpan = document.getElementById('nlrDisplay');
@@ -552,7 +516,7 @@
         const detailExtra = document.getElementById('detailExtra');
         const detailTotal = document.getElementById('detailTotal');
 
-        // 计算体积并更新隐藏pv及显示
+        // ---------- 辅助函数 ----------
         function updateVolume() {
             let ap = parseFloat(apDiam.value);
             let lr = parseFloat(lrDiam.value);
@@ -566,6 +530,39 @@
                 pvHidden.value = '';
                 pvDisplaySpan.innerText = '—';
             }
+        }
+
+        function updateDerivedFields() {
+            let tpsa = parseFloat(tpsaInput.value);
+            let pv = parseFloat(pvHidden.value);
+            if (!isNaN(tpsa) && !isNaN(pv) && pv > 0) {
+                let psad = tpsa / pv;
+                psadSpan.innerText = psad.toFixed(3) + ' ng/mL³';
+            } else {
+                psadSpan.innerText = '—';
+            }
+            let neut = parseFloat(neutInput.value);
+            let lymph = parseFloat(lymphInput.value);
+            if (!isNaN(neut) && !isNaN(lymph) && lymph > 0) {
+                let nlr = neut / lymph;
+                nlrSpan.innerText = nlr.toFixed(2);
+            } else {
+                nlrSpan.innerText = '—';
+            }
+            let monoVal = parseFloat(monoInput.value);
+            if (!isNaN(monoVal) && !isNaN(lymph) && lymph > 0) {
+                let mlr = monoVal / lymph;
+                mlrSpan.innerText = mlr.toFixed(3);
+            } else {
+                mlrSpan.innerText = '（未提供单核细胞值）';
+            }
+        }
+
+        function getMlr() {
+            let mono = parseFloat(monoInput.value);
+            let lymph = parseFloat(lymphInput.value);
+            if (!isNaN(mono) && !isNaN(lymph) && lymph > 0) return mono / lymph;
+            return null;
         }
 
         // 评分函数
@@ -615,40 +612,89 @@
             return extra;
         }
 
-        function updateDerivedFields() {
+        // ---------- 核心计算与UI刷新（不保存历史） ----------
+        function refreshUI() {
+            // 获取表单值
+            let age = parseInt(ageInput.value);
             let tpsa = parseFloat(tpsaInput.value);
             let pv = parseFloat(pvHidden.value);
-            if (!isNaN(tpsa) && !isNaN(pv) && pv > 0) {
-                let psad = tpsa / pv;
-                psadSpan.innerText = psad.toFixed(3) + ' ng/mL³';
-            } else {
-                psadSpan.innerText = '—';
-            }
             let neut = parseFloat(neutInput.value);
             let lymph = parseFloat(lymphInput.value);
-            if (!isNaN(neut) && !isNaN(lymph) && lymph > 0) {
-                let nlr = neut / lymph;
-                nlrSpan.innerText = nlr.toFixed(2);
-            } else {
-                nlrSpan.innerText = '—';
-            }
-            let monoVal = parseFloat(monoInput.value);
-            if (!isNaN(monoVal) && !isNaN(lymph) && lymph > 0) {
-                let mlr = monoVal / lymph;
-                mlrSpan.innerText = mlr.toFixed(3);
-            } else {
-                mlrSpan.innerText = '（未提供单核细胞值）';
-            }
-        }
-
-        function getMlr() {
+            let dreVal = dreSelect.value;
+            let bmi = parseFloat(bmiInput.value);
+            let smoking = parseFloat(smokingInput.value);
+            let hypertension = htnCheck.checked;
+            let diabetes = dmCheck.checked;
+            let hyperlipidemia = hlpCheck.checked;
             let mono = parseFloat(monoInput.value);
-            let lymph = parseFloat(lymphInput.value);
-            if (!isNaN(mono) && !isNaN(lymph) && lymph > 0) return mono / lymph;
-            return null;
+            let mlr = getMlr();
+            let compositeRes = getFtPsadComposite();
+
+            // 校验
+            if (isNaN(age) || age < 40 || age > 100) {
+                // 显示占位符，不清空已有的正确结果，可以简单返回或显示错误提示
+                totalScoreSpan.innerText = '—';
+                riskLevelSpan.innerText = '无效输入';
+                adviceTextDiv.innerText = '请检查年龄 (40-100岁)';
+                return;
+            }
+            if (isNaN(tpsa) || tpsa < 0) {
+                totalScoreSpan.innerText = '—';
+                riskLevelSpan.innerText = '无效输入';
+                adviceTextDiv.innerText = '请检查PSA值';
+                return;
+            }
+            if (isNaN(pv) || pv <= 0) {
+                totalScoreSpan.innerText = '—';
+                riskLevelSpan.innerText = '无效输入';
+                adviceTextDiv.innerText = '请确保前列腺体积为正数';
+                return;
+            }
+            if (isNaN(neut) || neut < 0 || isNaN(lymph) || lymph <= 0) {
+                totalScoreSpan.innerText = '—';
+                riskLevelSpan.innerText = '无效输入';
+                adviceTextDiv.innerText = '请检查血常规数值';
+                return;
+            }
+
+            let psad = tpsa / pv;
+            let nlr = neut / lymph;
+            let mlrScore = (mlr !== null) ? getMlrScore(mlr) : 0;
+            let compositeScore = compositeRes.score;
+            let extra = getExtraScore(bmi, smoking, hypertension, diabetes, hyperlipidemia);
+            let total = getPsadScore(psad) + getAgeScore(age) + getNlrScore(nlr) + getDreScore(dreVal) + mlrScore + compositeScore + extra;
+
+            // 更新明细
+            detailPsad.innerText = getPsadScore(psad);
+            detailAge.innerText = getAgeScore(age);
+            detailNlr.innerText = getNlrScore(nlr);
+            detailDre.innerText = getDreScore(dreVal);
+            detailMlr.innerText = (mlr !== null) ? (mlrScore + ' (MLR: ' + mlr.toFixed(3) + ')') : '未评';
+            detailFtPsadIndex.innerText = compositeScore + ' (' + compositeRes.note + ')';
+            detailExtra.innerText = extra;
+            detailTotal.innerText = total;
+            totalScoreSpan.innerText = total;
+
+            let level = '', advice = '', cardClass = '';
+            if (total < 50) {
+                level = '低风险';
+                advice = '✅ 建议：常规随访，每年复查PSA，关注症状变化。';
+                cardClass = 'risk-low';
+            } else if (total <= 80) {
+                level = '中风险';
+                advice = '⚠️ 建议：1~3个月内复查PSA，或转诊县级医院进一步评估（如多参数MRI或重复PSA检测）。';
+                cardClass = 'risk-mid';
+            } else {
+                level = '高风险';
+                advice = '🔴 建议：尽快转诊至三甲医院（莆田学院附属医院）泌尿外科，考虑前列腺穿刺活检明确诊断。';
+                cardClass = 'risk-high';
+            }
+            riskLevelSpan.innerText = level;
+            adviceTextDiv.innerText = advice;
+            riskCard.className = `risk-card ${cardClass}`;
         }
 
-        // 历史记录（最大200条）
+        // ---------- 历史记录管理 ----------
         let historyRecords = [];
         function loadHistory() {
             try {
@@ -657,13 +703,11 @@
                 else historyRecords = [];
             } catch(e) { historyRecords = []; }
         }
-        
         function addRecord(record) {
             historyRecords.unshift(record);
             if (historyRecords.length > 200) historyRecords.pop();
             localStorage.setItem('pca_risk_history', JSON.stringify(historyRecords));
         }
-
         function displayHistory() {
             let listDiv = document.getElementById('historyList');
             if (!listDiv) return;
@@ -681,14 +725,11 @@
             html += '</ul>';
             listDiv.innerHTML = html;
         }
-        
         function clearAllHistory() {
             historyRecords = [];
             localStorage.removeItem('pca_risk_history');
             displayHistory();
         }
-
-        // 导出CSV（完整数据，无乱码）
         function exportHistoryToCSV() {
             if (historyRecords.length === 0) {
                 alert("暂无历史记录可导出！");
@@ -702,47 +743,17 @@
                 "MRI检查", "MRI结果", "穿刺活检", "活检次数",
                 "PSAD分值", "年龄分值", "NLR分值", "DRE分值", "MLR分值", "联合指数分值", "选填加分", "总分", "风险等级", "建议"
             ];
-            
             const rows = historyRecords.map(record => [
-                record.checkId || "",
-                record.patientName || "",
-                record.timestamp,
-                record.age,
-                record.tpsa,
-                record.fpsa,
-                record.apDiam,
-                record.lrDiam,
-                record.paDiam,
-                record.pv,
-                record.psad,
-                record.neut,
-                record.lymph,
-                record.nlr,
-                record.mono,
-                record.mlr,
-                record.plt,
-                record.dre,
-                record.bmi,
-                record.smoking,
-                record.hypertension ? "是" : "否",
-                record.diabetes ? "是" : "否",
-                record.hyperlipidemia ? "是" : "否",
-                record.mriStatus === 'yes' ? "是" : (record.mriStatus === 'no' ? "否" : ""),
-                record.mriResult || "",
-                record.biopsyStatus === 'yes' ? "是" : (record.biopsyStatus === 'no' ? "否" : ""),
-                record.biopsyTimes || "",
-                record.psadScore,
-                record.ageScore,
-                record.nlrScore,
-                record.dreScore,
-                record.mlrScore,
-                record.compositeScore,
-                record.extraScore,
-                record.totalScore,
-                record.riskLevel,
-                record.advice
+                record.checkId || "", record.patientName || "", record.timestamp, record.age, record.tpsa, record.fpsa,
+                record.apDiam, record.lrDiam, record.paDiam, record.pv, record.psad,
+                record.neut, record.lymph, record.nlr, record.mono, record.mlr, record.plt,
+                record.dre, record.bmi, record.smoking,
+                record.hypertension ? "是" : "否", record.diabetes ? "是" : "否", record.hyperlipidemia ? "是" : "否",
+                record.mriStatus === 'yes' ? "是" : (record.mriStatus === 'no' ? "否" : ""), record.mriResult || "",
+                record.biopsyStatus === 'yes' ? "是" : (record.biopsyStatus === 'no' ? "否" : ""), record.biopsyTimes || "",
+                record.psadScore, record.ageScore, record.nlrScore, record.dreScore, record.mlrScore,
+                record.compositeScore, record.extraScore, record.totalScore, record.riskLevel, record.advice
             ]);
-            
             const escapeCSV = (cell) => {
                 if (cell === undefined || cell === null) return "";
                 let str = String(cell);
@@ -751,7 +762,6 @@
                 }
                 return str;
             };
-            
             const csvRows = [headers.map(escapeCSV).join(",")];
             for (let row of rows) {
                 csvRows.push(row.map(escapeCSV).join(","));
@@ -768,12 +778,12 @@
             URL.revokeObjectURL(url);
         }
 
-        function computeRisk() {
+        // ---------- 计算并保存（仅按钮触发） ----------
+        function computeAndSave() {
+            // 先刷新UI（确保结果显示正确）
+            refreshUI();
+            // 获取所有当前值（与 refreshUI 中的逻辑保持一致，但需要构造完整的 record）
             let checkId = checkIdInput.value.trim();
-            if (!checkId) {
-                alert("检查号是必填项，请输入唯一标识！");
-                return;
-            }
             let patientName = patientNameInput.value.trim();
             let age = parseInt(ageInput.value);
             let tpsa = parseFloat(tpsaInput.value);
@@ -792,24 +802,33 @@
             let hypertension = htnCheck.checked;
             let diabetes = dmCheck.checked;
             let hyperlipidemia = hlpCheck.checked;
-            
-            // MRI 和活检取值
             let mriStatus = mriStatusSelect.value;
             let mriResult = (mriStatus === 'yes') ? mriResultInput.value.trim() : '';
             let biopsyStatus = biopsyStatusSelect.value;
             let biopsyTimes = (biopsyStatus === 'yes') ? biopsyTimesSelect.value : '';
 
-            if (isNaN(age) || age < 40 || age > 100) { alert("请输入有效年龄 (40-100岁)"); return; }
-            if (isNaN(tpsa) || tpsa < 0) { alert("请输入有效的总PSA值 (≥0)"); return; }
-            if (isNaN(pv) || pv <= 0) { alert("前列腺体积必须为正数，请确保三径正确"); return; }
-            if (isNaN(neut) || neut < 0) { alert("中性粒细胞计数无效"); return; }
-            if (isNaN(lymph) || lymph <= 0) { alert("淋巴细胞计数必须 >0"); return; }
+            // 再次校验，避免保存无效数据
+            if (isNaN(age) || age < 40 || age > 100) {
+                alert("年龄无效，无法保存记录");
+                return;
+            }
+            if (isNaN(tpsa) || tpsa < 0) {
+                alert("总PSA无效，无法保存记录");
+                return;
+            }
+            if (isNaN(pv) || pv <= 0) {
+                alert("前列腺体积无效，无法保存记录");
+                return;
+            }
+            if (isNaN(neut) || neut < 0 || isNaN(lymph) || lymph <= 0) {
+                alert("血常规数据无效，无法保存记录");
+                return;
+            }
 
             let psad = tpsa / pv;
             let nlr = neut / lymph;
             let mlr = (isNaN(mono) || lymph <= 0) ? null : mono / lymph;
             let compositeRes = getFtPsadComposite();
-
             let psadScore = getPsadScore(psad);
             let ageScore = getAgeScore(age);
             let nlrScore = getNlrScore(nlr);
@@ -818,69 +837,33 @@
             let compositeScore = compositeRes.score;
             let extra = getExtraScore(bmi, smoking, hypertension, diabetes, hyperlipidemia);
             let total = psadScore + ageScore + nlrScore + dreScore + mlrScore + compositeScore + extra;
+            let level = '';
+            if (total < 50) level = '低风险';
+            else if (total <= 80) level = '中风险';
+            else level = '高风险';
 
-            // 更新UI
-            detailPsad.innerText = psadScore;
-            detailAge.innerText = ageScore;
-            detailNlr.innerText = nlrScore;
-            detailDre.innerText = dreScore;
-            detailMlr.innerText = (mlr !== null) ? (mlrScore + ' (MLR: ' + mlr.toFixed(3) + ')') : '未评';
-            detailFtPsadIndex.innerText = compositeScore + ' (' + compositeRes.note + ')';
-            detailExtra.innerText = extra;
-            detailTotal.innerText = total;
-            totalScoreSpan.innerText = total;
-
-            let level = '', advice = '', cardClass = '';
-            if (total < 50) { level = '低风险'; advice = '✅ 建议：常规随访，每年复查PSA，关注症状变化。'; cardClass = 'risk-low'; }
-            else if (total <= 80) { level = '中风险'; advice = '⚠️ 建议：1~3个月内复查PSA，或转诊县级医院进一步评估（如多参数MRI或重复PSA检测）。'; cardClass = 'risk-mid'; }
-            else { level = '高风险'; advice = '🔴 建议：尽快转诊至三甲医院（莆田学院附属医院）泌尿外科，考虑前列腺穿刺活检明确诊断。'; cardClass = 'risk-high'; }
-            riskLevelSpan.innerText = level;
-            adviceTextDiv.innerText = advice;
-            riskCard.className = `risk-card ${cardClass}`;
-
-            // 构建完整记录对象
             const record = {
-                checkId: checkId,
-                patientName: patientName,
-                timestamp: new Date().toLocaleString(),
-                age: age,
-                tpsa: tpsa.toFixed(2),
-                fpsa: isNaN(fpsa) ? '' : fpsa.toFixed(2),
-                apDiam: ap.toFixed(1),
-                lrDiam: lr.toFixed(1),
-                paDiam: pa.toFixed(1),
-                pv: pv.toFixed(1),
-                psad: psad.toFixed(3),
-                neut: neut.toFixed(1),
-                lymph: lymph.toFixed(1),
-                nlr: nlr.toFixed(2),
-                mono: isNaN(mono) ? '' : mono.toFixed(1),
-                mlr: mlr !== null ? mlr.toFixed(3) : '',
-                plt: isNaN(plt) ? '' : plt.toFixed(0),
+                checkId, patientName, timestamp: new Date().toLocaleString(),
+                age, tpsa: tpsa.toFixed(2), fpsa: isNaN(fpsa) ? '' : fpsa.toFixed(2),
+                apDiam: ap.toFixed(1), lrDiam: lr.toFixed(1), paDiam: pa.toFixed(1), pv: pv.toFixed(1),
+                psad: psad.toFixed(3), neut: neut.toFixed(1), lymph: lymph.toFixed(1), nlr: nlr.toFixed(2),
+                mono: isNaN(mono) ? '' : mono.toFixed(1), mlr: mlr !== null ? mlr.toFixed(3) : '', plt: isNaN(plt) ? '' : plt.toFixed(0),
                 dre: dreVal === 'normal' ? '正常' : (dreVal === 'suspicious' ? '可疑结节' : '质硬'),
-                bmi: isNaN(bmi) ? '' : bmi.toFixed(1),
-                smoking: isNaN(smoking) ? '' : smoking,
-                hypertension: hypertension,
-                diabetes: diabetes,
-                hyperlipidemia: hyperlipidemia,
-                mriStatus: mriStatus,
-                mriResult: mriResult,
-                biopsyStatus: biopsyStatus,
-                biopsyTimes: biopsyTimes,
-                psadScore: psadScore,
-                ageScore: ageScore,
-                nlrScore: nlrScore,
-                dreScore: dreScore,
-                mlrScore: mlrScore,
-                compositeScore: compositeScore,
-                extraScore: extra,
-                totalScore: total,
-                riskLevel: level,
-                advice: advice
+                bmi: isNaN(bmi) ? '' : bmi.toFixed(1), smoking: isNaN(smoking) ? '' : smoking,
+                hypertension, diabetes, hyperlipidemia,
+                mriStatus, mriResult, biopsyStatus, biopsyTimes,
+                psadScore, ageScore, nlrScore, dreScore, mlrScore, compositeScore, extraScore: extra,
+                totalScore: total, riskLevel: level,
+                advice: (total < 50) ? '✅ 建议：常规随访，每年复查PSA，关注症状变化。' :
+                        (total <= 80) ? '⚠️ 建议：1~3个月内复查PSA，或转诊县级医院进一步评估（如多参数MRI或重复PSA检测）。' :
+                        '🔴 建议：尽快转诊至三甲医院（莆田学院附属医院）泌尿外科，考虑前列腺穿刺活检明确诊断。'
             };
             addRecord(record);
+            // 可选：提醒用户已保存
+            // alert("记录已保存");
         }
 
+        // ---------- 重置表单 ----------
         function resetForm() {
             checkIdInput.value = '';
             patientNameInput.value = '';
@@ -900,60 +883,76 @@
             htnCheck.checked = false;
             dmCheck.checked = false;
             hlpCheck.checked = false;
-            // 重置 MRI 和活检选择为“请选择”
             mriStatusSelect.value = '';
             mriResultInput.value = '';
             biopsyStatusSelect.value = '';
-            biopsyTimesSelect.value = '1';
-            toggleMriResult();
-            toggleBiopsyTimes();
+            biopsyTimesSelect.value = '';
+            // 重新计算辅助显示
             updateVolume();
             updateDerivedFields();
-            computeRisk();
+            // 刷新结果UI（不保存历史）
+            refreshUI();
+            // 隐藏动态子选项
+            if (mriResultDiv) mriResultDiv.style.display = 'none';
+            if (biopsyTimesDiv) biopsyTimesDiv.style.display = 'none';
         }
 
-        function showHistoryModal() {
-            displayHistory();
-            document.getElementById('historyModal').style.display = 'flex';
+        // ---------- MRI/活检子控件显示 ----------
+        function toggleMriResult() {
+            if (mriStatusSelect.value === 'yes') {
+                mriResultDiv.style.display = 'block';
+            } else {
+                mriResultDiv.style.display = 'none';
+                mriResultInput.value = '';
+            }
         }
+        function toggleBiopsyTimes() {
+            if (biopsyStatusSelect.value === 'yes') {
+                biopsyTimesDiv.style.display = 'block';
+                if (biopsyTimesSelect.value === '') biopsyTimesSelect.value = '';
+            } else {
+                biopsyTimesDiv.style.display = 'none';
+                biopsyTimesSelect.value = '';
+            }
+        }
+        mriStatusSelect.addEventListener('change', () => { toggleMriResult(); refreshUI(); });
+        biopsyStatusSelect.addEventListener('change', () => { toggleBiopsyTimes(); refreshUI(); });
+        toggleMriResult();
+        toggleBiopsyTimes();
 
-        // 事件绑定
-        document.getElementById('calcBtn').addEventListener('click', computeRisk);
+        // ---------- 事件绑定 ----------
+        document.getElementById('calcBtn').addEventListener('click', computeAndSave);
         document.getElementById('resetBtn').addEventListener('click', resetForm);
-        document.getElementById('historyBtn').addEventListener('click', showHistoryModal);
+        document.getElementById('historyBtn').addEventListener('click', () => { displayHistory(); document.getElementById('historyModal').style.display = 'flex'; });
         document.getElementById('downloadHistoryBtn').addEventListener('click', exportHistoryToCSV);
         document.getElementById('closeHistoryBtn').addEventListener('click', () => { document.getElementById('historyModal').style.display = 'none'; });
         document.getElementById('clearHistoryBtn').addEventListener('click', () => { if(confirm('确定清空所有历史记录吗？')) clearAllHistory(); });
 
+        // 所有输入只触发刷新UI（不保存记录）
         const volumeInputs = [apDiam, lrDiam, paDiam];
-        volumeInputs.forEach(inp => inp.addEventListener('input', function() {
+        volumeInputs.forEach(inp => inp.addEventListener('input', () => {
             updateVolume();
             updateDerivedFields();
-            computeRisk();
+            refreshUI();
         }));
-        const otherInputs = [ageInput, tpsaInput, neutInput, lymphInput, monoInput, fpsaInput, dreSelect, bmiInput, smokingInput, htnCheck, dmCheck, hlpCheck, mriResultInput, biopsyTimesSelect];
-        otherInputs.forEach(inp => inp.addEventListener('input', function() {
+        const otherInputs = [ageInput, tpsaInput, neutInput, lymphInput, monoInput, fpsaInput, dreSelect,
+                             bmiInput, smokingInput, htnCheck, dmCheck, hlpCheck, mriResultInput, biopsyTimesSelect];
+        otherInputs.forEach(inp => inp.addEventListener('input', () => {
             updateDerivedFields();
-            computeRisk();
+            refreshUI();
         }));
-        htnCheck.addEventListener('change', computeRisk);
-        dmCheck.addEventListener('change', computeRisk);
-        hlpCheck.addEventListener('change', computeRisk);
-        mriStatusSelect.addEventListener('change', function() {
-            toggleMriResult();
-            computeRisk();
-        });
-        biopsyStatusSelect.addEventListener('change', function() {
-            toggleBiopsyTimes();
-            computeRisk();
-        });
-        mriResultInput.addEventListener('input', computeRisk);
-        biopsyTimesSelect.addEventListener('input', computeRisk);
+        // 复选框变化
+        htnCheck.addEventListener('change', refreshUI);
+        dmCheck.addEventListener('change', refreshUI);
+        hlpCheck.addEventListener('change', refreshUI);
+        mriResultInput.addEventListener('input', refreshUI);
+        biopsyTimesSelect.addEventListener('input', refreshUI);
+        // mriStatusSelect / biopsyStatusSelect 已有 change 事件中调用了 refreshUI
 
         // 初始化
         updateVolume();
         updateDerivedFields();
-        computeRisk();
+        refreshUI();
         loadHistory();
     })();
 </script>
