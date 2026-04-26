@@ -270,11 +270,17 @@
     <div class="main-grid">
         <div class="form-section">
             <form id="riskForm">
-                <!-- 新增：检查号字段 -->
+                <!-- 检查号（必填） -->
                 <div class="form-group">
-                    <label>检查号 (Check ID)</label>
-                    <input type="text" id="checkId" placeholder="例如：P20240001 或患者病历号" autocomplete="off">
-                    <div class="inline-hint">建议填写唯一标识，便于溯源</div>
+                    <label class="required">检查号 (Check ID)</label>
+                    <input type="text" id="checkId" placeholder="例如：P20240001 或患者病历号" autocomplete="off" required>
+                    <div class="inline-hint">唯一标识，必填</div>
+                </div>
+                <!-- 患者姓名 -->
+                <div class="form-group">
+                    <label>患者姓名</label>
+                    <input type="text" id="patientName" placeholder="请输入患者姓名" autocomplete="off">
+                    <div class="inline-hint">建议填写，便于识别</div>
                 </div>
                 <div class="row-2cols">
                     <div class="form-group">
@@ -377,6 +383,40 @@
                         <label><input type="checkbox" id="diabetes"> 糖尿病</label>
                         <label><input type="checkbox" id="hyperlipidemia"> 高脂血症</label>
                     </div>
+                    
+                    <!-- 磁共振成像（MRI）：初始“请选择” -->
+                    <div class="form-group" style="margin-top: 16px;">
+                        <label>磁共振成像 (MRI)</label>
+                        <select id="mriStatus">
+                            <option value="" selected disabled>请选择</option>
+                            <option value="no">否</option>
+                            <option value="yes">是</option>
+                        </select>
+                        <div id="mriResultDiv" style="display: none; margin-top: 8px;">
+                            <label>MRI结果</label>
+                            <input type="text" id="mriResult" placeholder="请输入MRI检查结果（如PI-RADS评分等）" autocomplete="off">
+                        </div>
+                    </div>
+                    
+                    <!-- 穿刺活检：初始“请选择” -->
+                    <div class="form-group" style="margin-top: 16px;">
+                        <label>穿刺活检</label>
+                        <select id="biopsyStatus">
+                            <option value="" selected disabled>请选择</option>
+                            <option value="no">否</option>
+                            <option value="yes">是</option>
+                        </select>
+                        <div id="biopsyTimesDiv" style="display: none; margin-top: 8px;">
+                            <label>活检次数</label>
+                            <select id="biopsyTimes">
+                                <option value="1">1次</option>
+                                <option value="2">2次</option>
+                                <option value="3">3次</option>
+                                <option value="4">4次</option>
+                                <option value="5">5次</option>
+                            </select>
+                        </div>
+                    </div>
                 </details>
                 <div style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px;">
                     <button type="button" id="calcBtn">🔍 计算风险</button>
@@ -437,6 +477,7 @@
     (function() {
         // 表单元素
         const checkIdInput = document.getElementById('checkId');
+        const patientNameInput = document.getElementById('patientName');
         const ageInput = document.getElementById('age');
         const tpsaInput = document.getElementById('tpsa');
         const fpsaInput = document.getElementById('fpsa');
@@ -455,6 +496,44 @@
         const htnCheck = document.getElementById('hypertension');
         const dmCheck = document.getElementById('diabetes');
         const hlpCheck = document.getElementById('hyperlipidemia');
+        
+        // MRI 和活检相关元素
+        const mriStatusSelect = document.getElementById('mriStatus');
+        const mriResultDiv = document.getElementById('mriResultDiv');
+        const mriResultInput = document.getElementById('mriResult');
+        const biopsyStatusSelect = document.getElementById('biopsyStatus');
+        const biopsyTimesDiv = document.getElementById('biopsyTimesDiv');
+        const biopsyTimesSelect = document.getElementById('biopsyTimes');
+        
+        // 控制 MRI 结果输入框显示/隐藏，并清空输入值
+        function toggleMriResult() {
+            if (mriStatusSelect.value === 'yes') {
+                mriResultDiv.style.display = 'block';
+            } else {
+                mriResultDiv.style.display = 'none';
+                mriResultInput.value = '';
+            }
+        }
+        // 控制活检次数下拉框显示/隐藏，并重置次数
+        function toggleBiopsyTimes() {
+            if (biopsyStatusSelect.value === 'yes') {
+                biopsyTimesDiv.style.display = 'block';
+            } else {
+                biopsyTimesDiv.style.display = 'none';
+                biopsyTimesSelect.value = '1';
+            }
+        }
+        mriStatusSelect.addEventListener('change', function() {
+            toggleMriResult();
+            computeRisk();
+        });
+        biopsyStatusSelect.addEventListener('change', function() {
+            toggleBiopsyTimes();
+            computeRisk();
+        });
+        // 初始状态（请选择）：隐藏子选项
+        toggleMriResult();
+        toggleBiopsyTimes();
 
         // 显示元素
         const psadSpan = document.getElementById('psadDisplay');
@@ -480,7 +559,7 @@
             let pa = parseFloat(paDiam.value);
             if (!isNaN(ap) && !isNaN(lr) && !isNaN(pa) && ap > 0 && lr > 0 && pa > 0) {
                 let vol = ap * lr * pa * 0.52;
-                vol = Math.round(vol * 10) / 10; // 保留一位小数
+                vol = Math.round(vol * 10) / 10;
                 pvHidden.value = vol;
                 pvDisplaySpan.innerText = vol.toFixed(1) + ' mL';
             } else {
@@ -579,7 +658,6 @@
             } catch(e) { historyRecords = []; }
         }
         
-        // 保存一条完整记录
         function addRecord(record) {
             historyRecords.unshift(record);
             if (historyRecords.length > 200) historyRecords.pop();
@@ -596,7 +674,7 @@
             let html = '<ul style="list-style: none; padding: 0;">';
             for (let r of historyRecords) {
                 html += `<li style="border-bottom:1px solid #e2e8f0; padding:10px 0;">
-                            <strong>${r.checkId || '无检查号'}</strong> | ${r.timestamp}<br>
+                            <strong>${r.checkId || '无检查号'}</strong> | ${r.patientName || ''} | ${r.timestamp}<br>
                             总分：${r.totalScore}(${r.riskLevel}) | PSA:${r.tpsa} | PSAD:${r.psad} | 年龄:${r.age}
                          </li>`;
             }
@@ -616,17 +694,18 @@
                 alert("暂无历史记录可导出！");
                 return;
             }
-            // 定义所有字段的表头（覆盖全部输入和评分明细）
             const headers = [
-                "检查号", "时间戳", "年龄(岁)", "总PSA(ng/mL)", "游离PSA(ng/mL)", 
+                "检查号", "患者姓名", "时间戳", "年龄(岁)", "总PSA(ng/mL)", "游离PSA(ng/mL)", 
                 "上下径(cm)", "左右径(cm)", "前后径(cm)", "计算体积(mL)", "PSAD(ng/mL³)",
                 "中性粒细胞(10^9/L)", "淋巴细胞(10^9/L)", "NLR", "单核细胞(10^9/L)", "MLR", "血小板(10^9/L)",
                 "DRE结果", "BMI(kg/m²)", "吸烟指数(支·年)", "高血压", "糖尿病", "高脂血症",
+                "MRI检查", "MRI结果", "穿刺活检", "活检次数",
                 "PSAD分值", "年龄分值", "NLR分值", "DRE分值", "MLR分值", "联合指数分值", "选填加分", "总分", "风险等级", "建议"
             ];
             
             const rows = historyRecords.map(record => [
                 record.checkId || "",
+                record.patientName || "",
                 record.timestamp,
                 record.age,
                 record.tpsa,
@@ -648,6 +727,10 @@
                 record.hypertension ? "是" : "否",
                 record.diabetes ? "是" : "否",
                 record.hyperlipidemia ? "是" : "否",
+                record.mriStatus === 'yes' ? "是" : (record.mriStatus === 'no' ? "否" : ""),
+                record.mriResult || "",
+                record.biopsyStatus === 'yes' ? "是" : (record.biopsyStatus === 'no' ? "否" : ""),
+                record.biopsyTimes || "",
                 record.psadScore,
                 record.ageScore,
                 record.nlrScore,
@@ -660,7 +743,6 @@
                 record.advice
             ]);
             
-            // 将每行数据转换为 CSV 行（处理可能的逗号、换行等）
             const escapeCSV = (cell) => {
                 if (cell === undefined || cell === null) return "";
                 let str = String(cell);
@@ -675,7 +757,6 @@
                 csvRows.push(row.map(escapeCSV).join(","));
             }
             const csvContent = csvRows.join("\n");
-            // 添加 BOM 以解决中文乱码
             const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
@@ -689,6 +770,11 @@
 
         function computeRisk() {
             let checkId = checkIdInput.value.trim();
+            if (!checkId) {
+                alert("检查号是必填项，请输入唯一标识！");
+                return;
+            }
+            let patientName = patientNameInput.value.trim();
             let age = parseInt(ageInput.value);
             let tpsa = parseFloat(tpsaInput.value);
             let fpsa = parseFloat(fpsaInput.value);
@@ -706,6 +792,12 @@
             let hypertension = htnCheck.checked;
             let diabetes = dmCheck.checked;
             let hyperlipidemia = hlpCheck.checked;
+            
+            // MRI 和活检取值
+            let mriStatus = mriStatusSelect.value;
+            let mriResult = (mriStatus === 'yes') ? mriResultInput.value.trim() : '';
+            let biopsyStatus = biopsyStatusSelect.value;
+            let biopsyTimes = (biopsyStatus === 'yes') ? biopsyTimesSelect.value : '';
 
             if (isNaN(age) || age < 40 || age > 100) { alert("请输入有效年龄 (40-100岁)"); return; }
             if (isNaN(tpsa) || tpsa < 0) { alert("请输入有效的总PSA值 (≥0)"); return; }
@@ -727,7 +819,7 @@
             let extra = getExtraScore(bmi, smoking, hypertension, diabetes, hyperlipidemia);
             let total = psadScore + ageScore + nlrScore + dreScore + mlrScore + compositeScore + extra;
 
-            // 更新 UI 明细
+            // 更新UI
             detailPsad.innerText = psadScore;
             detailAge.innerText = ageScore;
             detailNlr.innerText = nlrScore;
@@ -749,6 +841,7 @@
             // 构建完整记录对象
             const record = {
                 checkId: checkId,
+                patientName: patientName,
                 timestamp: new Date().toLocaleString(),
                 age: age,
                 tpsa: tpsa.toFixed(2),
@@ -770,6 +863,10 @@
                 hypertension: hypertension,
                 diabetes: diabetes,
                 hyperlipidemia: hyperlipidemia,
+                mriStatus: mriStatus,
+                mriResult: mriResult,
+                biopsyStatus: biopsyStatus,
+                biopsyTimes: biopsyTimes,
                 psadScore: psadScore,
                 ageScore: ageScore,
                 nlrScore: nlrScore,
@@ -786,6 +883,7 @@
 
         function resetForm() {
             checkIdInput.value = '';
+            patientNameInput.value = '';
             ageInput.value = '65';
             tpsaInput.value = '6.5';
             fpsaInput.value = '1.2';
@@ -802,6 +900,13 @@
             htnCheck.checked = false;
             dmCheck.checked = false;
             hlpCheck.checked = false;
+            // 重置 MRI 和活检选择为“请选择”
+            mriStatusSelect.value = '';
+            mriResultInput.value = '';
+            biopsyStatusSelect.value = '';
+            biopsyTimesSelect.value = '1';
+            toggleMriResult();
+            toggleBiopsyTimes();
             updateVolume();
             updateDerivedFields();
             computeRisk();
@@ -820,22 +925,30 @@
         document.getElementById('closeHistoryBtn').addEventListener('click', () => { document.getElementById('historyModal').style.display = 'none'; });
         document.getElementById('clearHistoryBtn').addEventListener('click', () => { if(confirm('确定清空所有历史记录吗？')) clearAllHistory(); });
 
-        // 监听所有会影响体积或衍生指标的输入
         const volumeInputs = [apDiam, lrDiam, paDiam];
         volumeInputs.forEach(inp => inp.addEventListener('input', function() {
             updateVolume();
             updateDerivedFields();
             computeRisk();
         }));
-        const otherInputs = [ageInput, tpsaInput, neutInput, lymphInput, monoInput, fpsaInput, dreSelect, bmiInput, smokingInput, htnCheck, dmCheck, hlpCheck];
+        const otherInputs = [ageInput, tpsaInput, neutInput, lymphInput, monoInput, fpsaInput, dreSelect, bmiInput, smokingInput, htnCheck, dmCheck, hlpCheck, mriResultInput, biopsyTimesSelect];
         otherInputs.forEach(inp => inp.addEventListener('input', function() {
             updateDerivedFields();
             computeRisk();
         }));
-        // 额外处理复选框变化
         htnCheck.addEventListener('change', computeRisk);
         dmCheck.addEventListener('change', computeRisk);
         hlpCheck.addEventListener('change', computeRisk);
+        mriStatusSelect.addEventListener('change', function() {
+            toggleMriResult();
+            computeRisk();
+        });
+        biopsyStatusSelect.addEventListener('change', function() {
+            toggleBiopsyTimes();
+            computeRisk();
+        });
+        mriResultInput.addEventListener('input', computeRisk);
+        biopsyTimesSelect.addEventListener('input', computeRisk);
 
         // 初始化
         updateVolume();
