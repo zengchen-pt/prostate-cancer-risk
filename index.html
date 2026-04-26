@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>前列腺癌免活检风险筛查工具 | 莆田学院附属医院</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #eef2f7;
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', Roboto, sans-serif;
+            padding: 24px 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #1e3a5f 0%, #0f2b44 100%);
+            padding: 24px 32px;
+            color: white;
+        }
+        .header h1 {
+            font-size: 1.9rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            margin-bottom: 8px;
+        }
+        .header p {
+            opacity: 0.85;
+            font-size: 0.9rem;
+        }
+        .main-grid {
+            display: flex;
+            flex-wrap: wrap;
+        }
+        .form-section {
+            flex: 1.2;
+            padding: 32px 32px 40px;
+            background: #ffffff;
+            border-right: 1px solid #e8edf2;
+        }
+        .result-section {
+            flex: 0.9;
+            padding: 32px;
+            background: #fafcff;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        .required::after {
+            content: "*";
+            color: #e53e3e;
+            margin-left: 4px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            transition: 0.2s;
+            background: #fff;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44,125,160,0.2);
+        }
+        .inline-hint {
+            font-size: 0.7rem;
+            color: #5b6e8c;
+            margin-top: 4px;
+        }
+        .row-2cols {
+            display: flex;
+            gap: 16px;
+        }
+        .row-2cols .form-group {
+            flex: 1;
+        }
+        .row-3cols {
+            display: flex;
+            gap: 16px;
+        }
+        .row-3cols .form-group {
+            flex: 1;
+        }
+        .computed-value {
+            background: #eef2ff;
+            border-radius: 20px;
+            padding: 8px 14px;
+            margin-top: 6px;
+            font-size: 0.85rem;
+            color: #1e3a5f;
+            display: inline-block;
+            font-weight: 500;
+        }
+        details {
+            margin: 20px 0 12px;
+            background: #f8fafc;
+            border-radius: 20px;
+            padding: 12px 16px;
+            border: 1px solid #e2e8f0;
+        }
+        summary {
+            font-weight: 600;
+            cursor: pointer;
+            color: #2c7da0;
+        }
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .checkbox-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: normal;
+            cursor: pointer;
+        }
+        button {
+            background: #2c7da0;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-right: 12px;
+            margin-top: 8px;
+        }
+        button:hover {
+            background: #1e5a77;
+            transform: translateY(-1px);
+        }
+        .btn-reset {
+            background: #94a3b8;
+        }
+        .btn-reset:hover {
+            background: #64748b;
+        }
+        .btn-history {
+            background: #6c63ff;
+        }
+        .btn-history:hover {
+            background: #5a52d6;
+        }
+        .risk-card {
+            border-radius: 28px;
+            padding: 28px 22px;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+            text-align: center;
+            background: #fff;
+        }
+        .risk-low {
+            background: #dcfce7;
+            border-left: 8px solid #22c55e;
+        }
+        .risk-mid {
+            background: #fef9c3;
+            border-left: 8px solid #f59e0b;
+        }
+        .risk-high {
+            background: #fee2e2;
+            border-left: 8px solid #ef4444;
+        }
+        .risk-level {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 12px 0;
+        }
+        .score-number {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 8px 0;
+        }
+        .advice-text {
+            background: white;
+            border-radius: 28px;
+            padding: 20px;
+            margin-top: 20px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .detail-table {
+            background: white;
+            border-radius: 24px;
+            padding: 16px;
+            margin-top: 20px;
+            font-size: 0.85rem;
+            border: 1px solid #e2e8f0;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eef2f7;
+        }
+        .history-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .history-content {
+            background: white;
+            border-radius: 28px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 70vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
+        hr {
+            margin: 20px 0;
+            border: 0;
+            height: 1px;
+            background: #e2e8f0;
+        }
+        @media (max-width: 800px) {
+            .main-grid { flex-direction: column; }
+            .form-section { border-right: none; }
+            .row-2cols { flex-direction: column; gap: 0; }
+            .row-3cols { flex-direction: column; gap: 0; }
+        }
+        footer {
+            text-align: center;
+            font-size: 0.75rem;
+            color: #94a3b8;
+            padding: 20px;
+            border-top: 1px solid #e2e8f0;
+            background: #fff;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🔬 前列腺癌免活检风险筛查工具</h1>
+        <p>基于常规临床指标 · 三色风险分级 · 基层适用 · 莆田学院附属医院科研项目</p>
+    </div>
+    <div class="main-grid">
+        <div class="form-section">
+            <form id="riskForm">
+                <div class="row-2cols">
+                    <div class="form-group">
+                        <label class="required">年龄 (岁)</label>
+                        <input type="number" id="age" step="1" min="40" max="100" value="65" required>
+                        <div class="inline-hint">建议筛查年龄50-80岁</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">总PSA (tPSA, ng/mL)</label>
+                        <input type="number" id="tpsa" step="0.01" min="0" value="6.5" required>
+                    </div>
+                </div>
+                <div class="row-2cols">
+                    <div class="form-group">
+                        <label>游离PSA (fPSA, ng/mL)</label>
+                        <input type="number" id="fpsa" step="0.01" min="0" value="1.2">
+                        <div class="inline-hint">用于参考 f/t 比值，不参与评分</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">前列腺三径 (cm)</label>
+                        <div class="row-3cols" style="gap: 8px;">
+                            <div style="flex:1">
+                                <input type="number" id="apDiam" step="0.1" min="0.1" value="5.0" placeholder="上下径" required>
+                                <div class="inline-hint">上下径</div>
+                            </div>
+                            <div style="flex:1">
+                                <input type="number" id="lrDiam" step="0.1" min="0.1" value="4.5" placeholder="左右径" required>
+                                <div class="inline-hint">左右径</div>
+                            </div>
+                            <div style="flex:1">
+                                <input type="number" id="paDiam" step="0.1" min="0.1" value="3.0" placeholder="前后径" required>
+                                <div class="inline-hint">前后径</div>
+                            </div>
+                        </div>
+                        <div class="inline-hint">测算公式：体积(mL)=上下径×左右径×前后径×0.52</div>
+                    </div>
+                </div>
+                <!-- 隐藏的PV输入框，用于向后兼容JS逻辑 -->
+                <input type="hidden" id="pv" value="35.1">
+                <div class="form-group">
+                    <label>📐 计算体积 (PV, mL)</label>
+                    <div class="computed-value" id="pvDisplay">—</div>
+                </div>
+                <div class="form-group">
+                    <label>📊 PSAD (自动计算)</label>
+                    <div class="computed-value" id="psadDisplay">—</div>
+                </div>
+                <div class="row-2cols">
+                    <div class="form-group">
+                        <label class="required">中性粒细胞计数 (NEUT#, 10^9/L)</label>
+                        <input type="number" id="neut" step="0.1" min="0" value="4.8" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="required">淋巴细胞计数 (LYMPH#, 10^9/L)</label>
+                        <input type="number" id="lymph" step="0.1" min="0.1" value="1.6" required>
+                    </div>
+                </div>
+                <div class="row-2cols">
+                    <div class="form-group">
+                        <label>单核细胞计数 (MONO#, 10^9/L)</label>
+                        <input type="number" id="mono" step="0.1" min="0" value="0.5">
+                        <div class="inline-hint">用于计算MLR，反映全身炎症负荷[1]; 血常规未包含单核细胞时可选填</div>
+                    </div>
+                    <div class="form-group">
+                        <label>血小板计数 (PLT, 10^9/L)</label>
+                        <input type="number" id="plt" step="1" min="0" value="220">
+                        <div class="inline-hint">不参与评分，用于SII计算的参考信息</div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>📊 NLR (自动计算)</label>
+                    <div class="computed-value" id="nlrDisplay">—</div>
+                </div>
+                <div class="form-group">
+                    <label>🔬 MLR (自动计算)</label>
+                    <div class="computed-value" id="mlrDisplay">—</div>
+                </div>
+                <div class="form-group">
+                    <label class="required">肛门指检 (DRE)</label>
+                    <select id="dre">
+                        <option value="normal">正常</option>
+                        <option value="suspicious">可疑结节</option>
+                        <option value="hard">质硬</option>
+                    </select>
+                </div>
+                <details>
+                    <summary>📋 选填项（提高评估精度）</summary>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label>BMI (kg/m²)</label>
+                        <input type="number" id="bmi" step="0.1" min="10" max="50" value="">
+                        <div class="inline-hint">肥胖（BMI≥28）增加5分</div>
+                    </div>
+                    <div class="form-group">
+                        <label>吸烟指数 (支·年)</label>
+                        <input type="number" id="smoking" step="10" min="0" value="" placeholder="每日支数 × 吸烟年数">
+                        <div class="inline-hint">吸烟指数≥400增加5分</div>
+                    </div>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" id="hypertension"> 高血压</label>
+                        <label><input type="checkbox" id="diabetes"> 糖尿病</label>
+                        <label><input type="checkbox" id="hyperlipidemia"> 高脂血症</label>
+                    </div>
+                </details>
+                <div style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px;">
+                    <button type="button" id="calcBtn">🔍 计算风险</button>
+                    <button type="button" id="resetBtn" class="btn-reset">🗑️ 重置</button>
+                    <button type="button" id="historyBtn" class="btn-history">📋 历史记录</button>
+                </div>
+            </form>
+            <div class="inline-hint" style="margin-top: 20px;">* 所有指标均可在乡镇卫生院/社区中心获得。评分参考2025版中国指南及国际共识设计，仅供临床参考。</div>
+        </div>
+
+        <div class="result-section">
+            <div id="riskCard" class="risk-card risk-low">
+                <div style="font-size: 0.9rem; opacity: 0.7;">风险评估结果</div>
+                <div class="risk-level" id="riskLevel">低风险</div>
+                <div class="score-number" id="totalScore">0</div>
+                <div>总分 (范围 0~130+)</div>
+            </div>
+            <div class="advice-text" id="adviceText">
+                常规随访，每年复查PSA。
+            </div>
+            <div class="detail-table">
+                <div style="font-weight: 600; margin-bottom: 12px;">📊 评分明细</div>
+                <div id="scoreDetails">
+                    <div class="detail-item"><span>PSAD分值</span><span id="detailPsad">—</span></div>
+                    <div class="detail-item"><span>年龄分值</span><span id="detailAge">—</span></div>
+                    <div class="detail-item"><span>NLR分值</span><span id="detailNlr">—</span></div>
+                    <div class="detail-item"><span>DRE分值</span><span id="detailDre">—</span></div>
+                    <div class="detail-item"><span>MLR分值 (转化指数)</span><span id="detailMlr">—</span></div>
+                    <div class="detail-item"><span>(f/tPSA)/PSAD联合指数</span><span id="detailFtPsadIndex">—</span></div>
+                    <div class="detail-item"><span>选填加分</span><span id="detailExtra">—</span></div>
+                    <div class="detail-item" style="font-weight: 700; border-bottom: none;"><span>总 分</span><span id="detailTotal">—</span></div>
+                </div>
+            </div>
+            <div style="margin-top: 16px; font-size: 0.7rem; color: #5b6e8c;">
+                * 基于《2025中国前列腺癌诊疗指南》及国际共识。<br>
+                ** 中高风险建议进一步影像评估或转诊。
+            </div>
+        </div>
+    </div>
+    <footer>
+        莆田学院附属医院超声科 · 莆田市科技计划公益性项目 | 三色风险评估/基层筛查辅助工具
+    </footer>
+</div>
+
+<div id="historyModal" class="history-modal">
+    <div class="history-content">
+        <h3>📋 评估历史记录</h3>
+        <div id="historyList"></div>
+        <button id="clearHistoryBtn" style="margin-top: 16px; background:#f44336;">清空历史</button>
+        <button id="closeHistoryBtn" style="background:#94a3b8;">关闭</button>
+    </div>
+</div>
+
+<script>
+    (function() {
+        // 表单元素
+        const ageInput = document.getElementById('age');
+        const tpsaInput = document.getElementById('tpsa');
+        const fpsaInput = document.getElementById('fpsa');
+        const apDiam = document.getElementById('apDiam');
+        const lrDiam = document.getElementById('lrDiam');
+        const paDiam = document.getElementById('paDiam');
+        const pvHidden = document.getElementById('pv');
+        const pvDisplaySpan = document.getElementById('pvDisplay');
+        const neutInput = document.getElementById('neut');
+        const lymphInput = document.getElementById('lymph');
+        const monoInput = document.getElementById('mono');
+        const pltInput = document.getElementById('plt');
+        const dreSelect = document.getElementById('dre');
+        const bmiInput = document.getElementById('bmi');
+        const smokingInput = document.getElementById('smoking');
+        const htnCheck = document.getElementById('hypertension');
+        const dmCheck = document.getElementById('diabetes');
+        const hlpCheck = document.getElementById('hyperlipidemia');
+
+        // 显示元素
+        const psadSpan = document.getElementById('psadDisplay');
+        const nlrSpan = document.getElementById('nlrDisplay');
+        const mlrSpan = document.getElementById('mlrDisplay');
+        const riskCard = document.getElementById('riskCard');
+        const riskLevelSpan = document.getElementById('riskLevel');
+        const totalScoreSpan = document.getElementById('totalScore');
+        const adviceTextDiv = document.getElementById('adviceText');
+        const detailPsad = document.getElementById('detailPsad');
+        const detailAge = document.getElementById('detailAge');
+        const detailNlr = document.getElementById('detailNlr');
+        const detailDre = document.getElementById('detailDre');
+        const detailMlr = document.getElementById('detailMlr');
+        const detailFtPsadIndex = document.getElementById('detailFtPsadIndex');
+        const detailExtra = document.getElementById('detailExtra');
+        const detailTotal = document.getElementById('detailTotal');
+
+        // 计算体积并更新隐藏pv及显示
+        function updateVolume() {
+            let ap = parseFloat(apDiam.value);
+            let lr = parseFloat(lrDiam.value);
+            let pa = parseFloat(paDiam.value);
+            if (!isNaN(ap) && !isNaN(lr) && !isNaN(pa) && ap > 0 && lr > 0 && pa > 0) {
+                let vol = ap * lr * pa * 0.52;
+                vol = Math.round(vol * 10) / 10; // 保留一位小数
+                pvHidden.value = vol;
+                pvDisplaySpan.innerText = vol.toFixed(1) + ' mL';
+            } else {
+                pvHidden.value = '';
+                pvDisplaySpan.innerText = '—';
+            }
+        }
+
+        // 评分函数
+        function getPsadScore(psad) {
+            if (psad < 0.15) return 0;
+            if (psad <= 0.25) return 15;
+            return 30;
+        }
+        function getAgeScore(age) {
+            if (age < 60) return 0;
+            if (age <= 69) return 10;
+            return 20;
+        }
+        function getNlrScore(nlr) {
+            if (nlr < 2.5) return 0;
+            if (nlr <= 4) return 8;
+            return 15;
+        }
+        function getDreScore(dreVal) {
+            if (dreVal === 'normal') return 0;
+            if (dreVal === 'suspicious') return 20;
+            return 30;
+        }
+        function getMlrScore(mlr) {
+            if (!mlr || isNaN(mlr)) return 0;
+            return mlr >= 0.3 ? 6 : 0;
+        }
+        function getFtPsadComposite() {
+            let tpsa = parseFloat(tpsaInput.value);
+            let fpsa = parseFloat(fpsaInput.value);
+            let pv = parseFloat(pvHidden.value);
+            if (isNaN(tpsa) || isNaN(fpsa) || isNaN(pv) || pv <= 0) return { score: 0, note: '' };
+            let ftRatio = tpsa > 0 ? fpsa / tpsa : 0;
+            let psad = tpsa / pv;
+            if (psad <= 0) return { score: 0, note: '' };
+            let composite = ftRatio / psad;
+            if (composite <= 0.6) return { score: 12, note: '低复合值提示高风险' };
+            return { score: 0, note: '高复合值有助于避免不必要穿刺' };
+        }
+        function getExtraScore(bmi, smoking, hypertension, diabetes, hyperlipidemia) {
+            let extra = 0;
+            if (bmi && !isNaN(bmi) && bmi >= 28) extra += 5;
+            if (smoking && !isNaN(smoking) && smoking >= 400) extra += 5;
+            if (hypertension) extra += 3;
+            if (diabetes) extra += 3;
+            if (hyperlipidemia) extra += 3;
+            return extra;
+        }
+
+        function updateDerivedFields() {
+            let tpsa = parseFloat(tpsaInput.value);
+            let pv = parseFloat(pvHidden.value);
+            if (!isNaN(tpsa) && !isNaN(pv) && pv > 0) {
+                let psad = tpsa / pv;
+                psadSpan.innerText = psad.toFixed(3) + ' ng/mL³';
+            } else {
+                psadSpan.innerText = '—';
+            }
+            let neut = parseFloat(neutInput.value);
+            let lymph = parseFloat(lymphInput.value);
+            if (!isNaN(neut) && !isNaN(lymph) && lymph > 0) {
+                let nlr = neut / lymph;
+                nlrSpan.innerText = nlr.toFixed(2);
+            } else {
+                nlrSpan.innerText = '—';
+            }
+            let monoVal = parseFloat(monoInput.value);
+            if (!isNaN(monoVal) && !isNaN(lymph) && lymph > 0) {
+                let mlr = monoVal / lymph;
+                mlrSpan.innerText = mlr.toFixed(3);
+            } else {
+                mlrSpan.innerText = '（未提供单核细胞值）';
+            }
+        }
+
+        function getMlr() {
+            let mono = parseFloat(monoInput.value);
+            let lymph = parseFloat(lymphInput.value);
+            if (!isNaN(mono) && !isNaN(lymph) && lymph > 0) return mono / lymph;
+            return null;
+        }
+
+        // 历史记录
+        let historyRecords = [];
+        function loadHistory() {
+            try {
+                let saved = localStorage.getItem('pca_risk_history');
+                if (saved) historyRecords = JSON.parse(saved);
+                else historyRecords = [];
+            } catch(e) { historyRecords = []; }
+        }
+        function saveRecord(totalScore, riskLevel, age, tpsa, psadVal, nlrVal, dreVal) {
+            let record = {
+                timestamp: new Date().toLocaleString(),
+                totalScore, riskLevel, age, tpsa: tpsa.toFixed(2),
+                psad: psadVal ? psadVal.toFixed(3) : '—', nlr: nlrVal ? nlrVal.toFixed(2) : '—', dre: dreVal
+            };
+            historyRecords.unshift(record);
+            if (historyRecords.length > 20) historyRecords.pop();
+            localStorage.setItem('pca_risk_history', JSON.stringify(historyRecords));
+        }
+        function displayHistory() {
+            let listDiv = document.getElementById('historyList');
+            if (!listDiv) return;
+            if (historyRecords.length === 0) {
+                listDiv.innerHTML = '<p>暂无记录</p>';
+                return;
+            }
+            let html = '<ul style="list-style: none; padding: 0;">';
+            for (let r of historyRecords) {
+                html += `<li style="border-bottom:1px solid #e2e8f0; padding:10px 0;">${r.timestamp}<br>总分：${r.totalScore}(${r.riskLevel}) | PSA:${r.tpsa} | PSAD:${r.psad} | 年龄:${r.age}</li>`;
+            }
+            html += '</ul>';
+            listDiv.innerHTML = html;
+        }
+        function clearAllHistory() {
+            historyRecords = [];
+            localStorage.removeItem('pca_risk_history');
+            displayHistory();
+        }
+
+        function computeRisk() {
+            let age = parseInt(ageInput.value);
+            let tpsa = parseFloat(tpsaInput.value);
+            let pv = parseFloat(pvHidden.value);
+            let neut = parseFloat(neutInput.value);
+            let lymph = parseFloat(lymphInput.value);
+            let dreVal = dreSelect.value;
+
+            if (isNaN(age) || age < 40 || age > 100) { alert("请输入有效年龄 (40-100岁)"); return; }
+            if (isNaN(tpsa) || tpsa < 0) { alert("请输入有效的总PSA值 (≥0)"); return; }
+            if (isNaN(pv) || pv <= 0) { alert("前列腺体积必须为正数，请确保三径正确"); return; }
+            if (isNaN(neut) || neut < 0) { alert("中性粒细胞计数无效"); return; }
+            if (isNaN(lymph) || lymph <= 0) { alert("淋巴细胞计数必须 >0"); return; }
+
+            let psad = tpsa / pv;
+            let nlr = neut / lymph;
+            let mlr = getMlr();
+            let compositeRes = getFtPsadComposite();
+
+            let psadScore = getPsadScore(psad);
+            let ageScore = getAgeScore(age);
+            let nlrScore = getNlrScore(nlr);
+            let dreScore = getDreScore(dreVal);
+            let mlrScore = (mlr !== null) ? getMlrScore(mlr) : 0;
+            let compositeScore = compositeRes.score;
+            let bmi = parseFloat(bmiInput.value);
+            let smoking = parseFloat(smokingInput.value);
+            let extra = getExtraScore(bmi, smoking, htnCheck.checked, dmCheck.checked, hlpCheck.checked);
+            let total = psadScore + ageScore + nlrScore + dreScore + mlrScore + compositeScore + extra;
+
+            detailPsad.innerText = psadScore;
+            detailAge.innerText = ageScore;
+            detailNlr.innerText = nlrScore;
+            detailDre.innerText = dreScore;
+            detailMlr.innerText = (mlr !== null) ? (mlrScore + ' (MLR: ' + mlr.toFixed(3) + ')') : '未评';
+            detailFtPsadIndex.innerText = compositeScore + ' (' + compositeRes.note + ')';
+            detailExtra.innerText = extra;
+            detailTotal.innerText = total;
+            totalScoreSpan.innerText = total;
+
+            let level = '', advice = '', cardClass = '';
+            if (total < 50) { level = '低风险'; advice = '✅ 建议：常规随访，每年复查PSA，关注症状变化。'; cardClass = 'risk-low'; }
+            else if (total <= 80) { level = '中风险'; advice = '⚠️ 建议：1~3个月内复查PSA，或转诊县级医院进一步评估（如多参数MRI或重复PSA检测）。'; cardClass = 'risk-mid'; }
+            else { level = '高风险'; advice = '🔴 建议：尽快转诊至三甲医院（莆田学院附属医院）泌尿外科，考虑前列腺穿刺活检明确诊断。'; cardClass = 'risk-high'; }
+            riskLevelSpan.innerText = level;
+            adviceTextDiv.innerText = advice;
+            riskCard.className = `risk-card ${cardClass}`;
+
+            saveRecord(total, level, age, tpsa, psad, nlr, dreVal);
+        }
+
+        function resetForm() {
+            ageInput.value = '65';
+            tpsaInput.value = '6.5';
+            fpsaInput.value = '1.2';
+            apDiam.value = '5.0';
+            lrDiam.value = '4.5';
+            paDiam.value = '3.0';
+            neutInput.value = '4.8';
+            lymphInput.value = '1.6';
+            monoInput.value = '0.5';
+            pltInput.value = '220';
+            dreSelect.value = 'normal';
+            bmiInput.value = '';
+            smokingInput.value = '';
+            htnCheck.checked = false;
+            dmCheck.checked = false;
+            hlpCheck.checked = false;
+            updateVolume();
+            updateDerivedFields();
+            computeRisk();
+        }
+
+        function showHistoryModal() {
+            displayHistory();
+            document.getElementById('historyModal').style.display = 'flex';
+        }
+
+        // 事件绑定
+        document.getElementById('calcBtn').addEventListener('click', computeRisk);
+        document.getElementById('resetBtn').addEventListener('click', resetForm);
+        document.getElementById('historyBtn').addEventListener('click', showHistoryModal);
+        document.getElementById('closeHistoryBtn').addEventListener('click', () => { document.getElementById('historyModal').style.display = 'none'; });
+        document.getElementById('clearHistoryBtn').addEventListener('click', () => { if(confirm('确定清空所有历史记录吗？')) clearAllHistory(); });
+
+        // 监听所有会影响体积或衍生指标的输入
+        const volumeInputs = [apDiam, lrDiam, paDiam];
+        volumeInputs.forEach(inp => inp.addEventListener('input', function() {
+            updateVolume();
+            updateDerivedFields();
+            computeRisk();
+        }));
+        const otherInputs = [ageInput, tpsaInput, neutInput, lymphInput, monoInput, fpsaInput, dreSelect, bmiInput, smokingInput, htnCheck, dmCheck, hlpCheck];
+        otherInputs.forEach(inp => inp.addEventListener('input', function() {
+            updateDerivedFields();
+            computeRisk();
+        }));
+        // 额外处理复选框变化
+        htnCheck.addEventListener('change', computeRisk);
+        dmCheck.addEventListener('change', computeRisk);
+        hlpCheck.addEventListener('change', computeRisk);
+
+        // 初始化
+        updateVolume();
+        updateDerivedFields();
+        computeRisk();
+        loadHistory();
+    })();
+</script>
+</body>
+</html>
