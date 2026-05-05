@@ -550,7 +550,7 @@
             };
 
             try {
-                const response = await fetch('https://prostate-cancer-risk.onrender.com', {
+                const response = await fetch('https://prostate-cancer-risk.onrender.com/predict', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
