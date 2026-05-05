@@ -14,10 +14,15 @@ print(f"Scikit-learn version: {sklearn.__version__}")
 model = joblib.load("pca_screening_model_rf_calibrated.pkl")
 print("Model loaded successfully.")
 
-EXPECTED_FEATURES = [
+# 根据模型训练时的特征顺序（从日志确认）
+FEATURE_NAMES = [
     'age', 'tpsa', 'PV', 'PSAD', 'NLR', 'DRE',
     'BMI', 'hypertension', 'diabetes', 'hyperlipidemia', 'MRI'
 ]
+
+# 手动指定哪些是类别特征（需要进行独热编码的列）
+# 根据您的前端输入，这些列的值是 0/1/2 的整数，但本质是类别
+CATEGORICAL_FEATURES = ['DRE', 'hypertension', 'diabetes', 'hyperlipidemia', 'MRI']
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
@@ -26,27 +31,36 @@ def predict():
 
     data = request.get_json()
     try:
-        # 1. 将前端的 DRE 字符串转为数字
+        # 1. 转换 DRE 为数字（如果前端还是发了字符串）
         if 'DRE' in data and isinstance(data['DRE'], str):
             dre_map = {'normal': 0, 'suspicious': 1, 'hard': 2}
             data['DRE'] = dre_map.get(data['DRE'], 0)
 
-        # 2. 构建 DataFrame，确保列名和顺序与模型训练时完全一致
+        # 2. 构建原始 DataFrame，确保所有特征列都存在
         df = pd.DataFrame([data])
-        for col in EXPECTED_FEATURES:
+        for col in FEATURE_NAMES:
             if col not in df.columns:
                 df[col] = 0
-        df = df[EXPECTED_FEATURES]
-        df = df.astype(np.float64).fillna(0)
 
-        # 3. 关键步骤：显式重新包装为 DataFrame，防止被内部转换为 numpy 数组
-        #    这是为了解决“仅支持 pandas DataFrames 使用字符串指定列”的错误
-        df = pd.DataFrame(df, columns=EXPECTED_FEATURES)
+        # 3. 区分处理数值特征和类别特征
+        for col in FEATURE_NAMES:
+            if col in CATEGORICAL_FEATURES:
+                # 类别特征：转为整数，并限制在非负范围
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
+            else:
+                # 数值特征：转为 float64
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0).astype(np.float64)
 
-        # 4. 预测
+        # 4. 统一列顺序
+        df = df[FEATURE_NAMES]
+
+        # 5. 显式重新包装为 DataFrame，保留列名（老规矩）
+        df = pd.DataFrame(df, columns=FEATURE_NAMES)
+
+        # 6. 预测
         proba = model.predict_proba(df)[0, 1]
 
-        # 5. 风险分级
+        # 7. 风险分级
         if proba < 0.4:
             level, advice = '低风险', 'AI建议：常规随访，每年复查PSA，关注症状变化。'
         elif proba < 0.7:
