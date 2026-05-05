@@ -512,7 +512,7 @@
             return 0;
         }
 
-        // ********** 已修改：DRE 发送数字值并打印 payload **********
+        // ********** 已修改：DRE 发送数字值、顺序匹配模型要求并打印 payload **********
         async function predictWithAI() {
             const age = parseInt(ageInput.value);
             const tpsa = parseFloat(tpsaInput.value);
@@ -532,18 +532,19 @@
             const hyperlipidemia = hlpCheck.checked ? 1 : 0;
             const mriCategory = getMRICategory();
 
+            // 【核心修改】顺序调整为：age, tpsa, PV, PSAD, NLR, DRE, BMI, hypertension, diabetes, hyperlipidemia, MRI
             const payload = {
                 age: age,
                 tpsa: tpsa,
                 PV: pv,
                 PSAD: psad,
                 NLR: nlr,
+                DRE: dreSelect.value === 'normal' ? 0 : (dreSelect.value === 'suspicious' ? 1 : 2),
                 BMI: bmi,
                 hypertension: hypertension,
                 diabetes: diabetes,
                 hyperlipidemia: hyperlipidemia,
-                MRI: mriCategory,
-                DRE: dreSelect.value === 'normal' ? 0 : (dreSelect.value === 'suspicious' ? 1 : 2)
+                MRI: mriCategory
             };
             console.log("Sending payload:", payload);
 
