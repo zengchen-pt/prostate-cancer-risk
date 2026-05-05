@@ -4,46 +4,22 @@ import joblib
 import pandas as pd
 import os
 import sklearn
+import sklearn.tree
+import traceback
+
+# ----- 关键修复：给 DecisionTreeClassifier 打补丁 -----
+# 解决旧模型在新版 scikit-learn 下缺失 monotonic_cst 的问题
+if not hasattr(sklearn.tree.DecisionTreeClassifier, 'monotonic_cst'):
+    sklearn.tree.DecisionTreeClassifier.monotonic_cst = None
+# ---------------------------------------------------
 
 app = Flask(__name__)
 CORS(app)
 
 print(f"Scikit-learn version: {sklearn.__version__}")
 
+# 加载模型
 model = joblib.load("pca_screening_model_rf_calibrated.pkl")
-
-# ---------- monotonic_cst 修补 ----------
-def add_monotonic_cst(obj, visited=None):
-    if visited is None:
-        visited = set()
-    obj_id = id(obj)
-    if obj_id in visited:
-        return
-    visited.add(obj_id)
-    if hasattr(obj, 'tree_') and not hasattr(obj, 'monotonic_cst'):
-        try:
-            obj.monotonic_cst = None
-        except Exception:
-            pass
-    if hasattr(obj, '__dict__'):
-        for attr_name, attr_value in obj.__dict__.items():
-            if isinstance(attr_value, (list, tuple, set)):
-                for item in attr_value:
-                    if hasattr(item, '__dict__'):
-                        add_monotonic_cst(item, visited)
-            elif hasattr(attr_value, '__dict__'):
-                add_monotonic_cst(attr_value, visited)
-    if isinstance(obj, dict):
-        for key, val in obj.items():
-            if hasattr(val, '__dict__'):
-                add_monotonic_cst(val, visited)
-    elif isinstance(obj, (list, tuple, set)):
-        for item in obj:
-            if hasattr(item, '__dict__'):
-                add_monotonic_cst(item, visited)
-
-add_monotonic_cst(model)
-# ------------------------------------
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
@@ -52,7 +28,7 @@ def predict():
 
     data = request.get_json()
     try:
-        # DRE 编码
+        # DRE 编码（将字符串转为数字）
         dre_mapping = {
             'normal': 0,
             'suspicious': 1,
@@ -64,6 +40,7 @@ def predict():
         df = pd.DataFrame([data])
         proba = model.predict_proba(df)[0, 1]
 
+        # 风险等级划分
         if proba < 0.4:
             level = '低风险'
             advice = 'AI建议：常规随访，每年复查PSA，关注症状变化。'
@@ -80,6 +57,9 @@ def predict():
             'advice': advice
         })
     except Exception as e:
+        # 在 Render 日志中输出完整的错误信息
+        print("Predict error:")
+        traceback.print_exc()
         return jsonify({'error': str(e)}), 400
 
 
