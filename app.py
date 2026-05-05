@@ -4,14 +4,20 @@ import joblib
 import pandas as pd
 import os
 import sklearn
-import sklearn.tree
+from sklearn.tree import DecisionTreeClassifier
 import traceback
 
-# ----- 关键修复：给 DecisionTreeClassifier 打补丁 -----
-# 解决旧模型在新版 scikit-learn 下缺失 monotonic_cst 的问题
-if not hasattr(sklearn.tree.DecisionTreeClassifier, 'monotonic_cst'):
-    sklearn.tree.DecisionTreeClassifier.monotonic_cst = None
-# ---------------------------------------------------
+# ---------- 强制补丁：在加载模型前添加 monotonic_cst ----------
+# 确保即使是旧模型也能在新版 sklearn 上运行
+if not hasattr(DecisionTreeClassifier, 'monotonic_cst'):
+    DecisionTreeClassifier.monotonic_cst = None
+    print("已为 DecisionTreeClassifier 添加 monotonic_cst 属性")
+
+# 额外保险：给 DecisionTreeRegressor 也加上（虽不一定会用到）
+from sklearn.tree import DecisionTreeRegressor
+if not hasattr(DecisionTreeRegressor, 'monotonic_cst'):
+    DecisionTreeRegressor.monotonic_cst = None
+# -----------------------------------------------------------
 
 app = Flask(__name__)
 CORS(app)
@@ -28,7 +34,7 @@ def predict():
 
     data = request.get_json()
     try:
-        # DRE 编码（将字符串转为数字）
+        # DRE 编码
         dre_mapping = {
             'normal': 0,
             'suspicious': 1,
@@ -40,7 +46,7 @@ def predict():
         df = pd.DataFrame([data])
         proba = model.predict_proba(df)[0, 1]
 
-        # 风险等级划分
+        # 风险等级
         if proba < 0.4:
             level = '低风险'
             advice = 'AI建议：常规随访，每年复查PSA，关注症状变化。'
@@ -57,7 +63,6 @@ def predict():
             'advice': advice
         })
     except Exception as e:
-        # 在 Render 日志中输出完整的错误信息
         print("Predict error:")
         traceback.print_exc()
         return jsonify({'error': str(e)}), 400
