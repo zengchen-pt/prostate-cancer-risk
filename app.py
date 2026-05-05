@@ -14,15 +14,10 @@ print(f"Scikit-learn version: {sklearn.__version__}")
 model = joblib.load("pca_screening_model_rf_calibrated.pkl")
 print("Model loaded successfully.")
 
-# 根据模型训练时的特征顺序（从日志确认）
-FEATURE_NAMES = [
+FEATURES = [
     'age', 'tpsa', 'PV', 'PSAD', 'NLR', 'DRE',
     'BMI', 'hypertension', 'diabetes', 'hyperlipidemia', 'MRI'
 ]
-
-# 手动指定哪些是类别特征（需要进行独热编码的列）
-# 根据您的前端输入，这些列的值是 0/1/2 的整数，但本质是类别
-CATEGORICAL_FEATURES = ['DRE', 'hypertension', 'diabetes', 'hyperlipidemia', 'MRI']
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
@@ -31,36 +26,25 @@ def predict():
 
     data = request.get_json()
     try:
-        # 1. 转换 DRE 为数字（如果前端还是发了字符串）
+        # 转换 DRE 为数字（若前端仍发送字符串）
         if 'DRE' in data and isinstance(data['DRE'], str):
             dre_map = {'normal': 0, 'suspicious': 1, 'hard': 2}
             data['DRE'] = dre_map.get(data['DRE'], 0)
 
-        # 2. 构建原始 DataFrame，确保所有特征列都存在
+        # 构建 DataFrame
         df = pd.DataFrame([data])
-        for col in FEATURE_NAMES:
+        for col in FEATURES:
             if col not in df.columns:
                 df[col] = 0
+        df = df[FEATURES]
 
-        # 3. 区分处理数值特征和类别特征
-        for col in FEATURE_NAMES:
-            if col in CATEGORICAL_FEATURES:
-                # 类别特征：转为整数，并限制在非负范围
-                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0).astype(int)
-            else:
-                # 数值特征：转为 float64
-                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0.0).astype(np.float64)
+        # 确保所有列为数值类型（类别特征也保持 int，模型会自行处理）
+        df = df.apply(pd.to_numeric, errors='coerce').fillna(0)
+        df = df.astype(np.float64)  # sklearn 0.24.2 的 ColumnTransformer 需要一致类型
 
-        # 4. 统一列顺序
-        df = df[FEATURE_NAMES]
-
-        # 5. 显式重新包装为 DataFrame，保留列名（老规矩）
-        df = pd.DataFrame(df, columns=FEATURE_NAMES)
-
-        # 6. 预测
         proba = model.predict_proba(df)[0, 1]
 
-        # 7. 风险分级
+        # 风险分级
         if proba < 0.4:
             level, advice = '低风险', 'AI建议：常规随访，每年复查PSA，关注症状变化。'
         elif proba < 0.7:
