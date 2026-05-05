@@ -6,21 +6,32 @@ import os
 import sklearn
 import traceback
 
-# 确保 monotonic_cst 存在（旧版 sklearn 本身就有，这行只是双保险）
+# 补丁
 from sklearn.tree import DecisionTreeClassifier
 if not hasattr(DecisionTreeClassifier, 'monotonic_cst'):
     DecisionTreeClassifier.monotonic_cst = None
 
 app = Flask(__name__)
 CORS(app)
+
 print(f"Scikit-learn version: {sklearn.__version__}")
 
-model = joblib.load("pca_screening_model_rf_calibrated.pkl")
+# 加载模型
+try:
+    model = joblib.load("pca_screening_model_rf_calibrated.pkl")
+    print("Model loaded successfully.")
+except Exception as e:
+    print(f"Error loading model: {e}")
+    traceback.print_exc()
+    model = None
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
     if request.method == 'GET':
         return jsonify({'status': 'ok', 'message': 'Service is alive'})
+
+    if model is None:
+        return jsonify({'error': 'Model not loaded'}), 500
 
     data = request.get_json()
     try:
