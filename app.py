@@ -5,7 +5,7 @@ import pandas as pd
 
 app = Flask(__name__)
 CORS(app)
-model = joblib.load("pca_screening_model_v2.pkl")
+model = joblib.load("pca_screening_model_v2_fixed.pkl")
 
 @app.route('/predict', methods=['GET', 'POST'])  # 👈 关键修改：允许GET和POST两种请求
 def predict():
