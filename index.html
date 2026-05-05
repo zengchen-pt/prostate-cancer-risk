@@ -515,73 +515,67 @@
         }
 
         async function predictWithAI() {
-            // 数据校验（与原有逻辑类似）
-            const age = parseInt(ageInput.value);
-            const tpsa = parseFloat(tpsaInput.value);
-            const pv = parseFloat(pvHidden.value);
-            const neut = parseFloat(neutInput.value);
-            const lymph = parseFloat(lymphInput.value);
-            if (isNaN(age) || age < 40 || age > 100) { alert('年龄需在40-100之间'); return; }
-            if (isNaN(tpsa) || tpsa < 0) { alert('总PSA无效'); return; }
-            if (isNaN(pv) || pv <= 0) { alert('前列腺体积无效'); return; }
-            if (isNaN(neut) || neut <= 0 || isNaN(lymph) || lymph <= 0) { alert('血常规数值无效'); return; }
+    const age = parseInt(ageInput.value);
+    const tpsa = parseFloat(tpsaInput.value);
+    const pv = parseFloat(pvHidden.value);
+    const neut = parseFloat(neutInput.value);
+    const lymph = parseFloat(lymphInput.value);
+    if (isNaN(age) || age < 40 || age > 100) { alert('年龄需在40-100之间'); return; }
+    if (isNaN(tpsa) || tpsa < 0) { alert('总PSA无效'); return; }
+    if (isNaN(pv) || pv <= 0) { alert('前列腺体积无效'); return; }
+    if (isNaN(neut) || neut <= 0 || isNaN(lymph) || lymph <= 0) { alert('血常规数值无效'); return; }
 
-            const psad = tpsa / pv;
-            const nlr = neut / lymph;
-            const bmi = parseFloat(bmiInput.value) || 24;  // 默认值
-            const hypertension = htnCheck.checked ? 1 : 0;
-            const diabetes = dmCheck.checked ? 1 : 0;
-            const hyperlipidemia = hlpCheck.checked ? 1 : 0;
-            const mriCategory = getMRICategory();
-            const dre = dreSelect.value;
+    const psad = tpsa / pv;
+    const nlr = neut / lymph;
+    const bmi = parseFloat(bmiInput.value) || 24;
+    const hypertension = htnCheck.checked ? 1 : 0;
+    const diabetes = dmCheck.checked ? 1 : 0;
+    const hyperlipidemia = hlpCheck.checked ? 1 : 0;
+    const mriCategory = getMRICategory();
+    const dre = dreSelect.value;
 
-            const payload = {
-                age: age,
-                tpsa: tpsa,
-                PV: pv,
-                PSAD: psad,
-                NLR: nlr,
-                BMI: bmi,
-                hypertension: hypertension,
-                diabetes: diabetes,
-                hyperlipidemia: hyperlipidemia,
-                MRI: mriCategory,
-                DRE: dre
-            };
+    const payload = {
+        age: age,
+        tpsa: tpsa,
+        PV: pv,
+        PSAD: psad,
+        NLR: nlr,
+        BMI: bmi,
+        hypertension: hypertension,
+        diabetes: diabetes,
+        hyperlipidemia: hyperlipidemia,
+        MRI: mriCategory,
+        DRE: dre
+    };
 
-            try {
-                const response = await fetch('https://prostate-cancer-risk.onrender.com/predict', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                if (!response.ok) throw new Error('服务器错误');
-                const result = await response.json();
-                const probability = result.probability;
-                const riskLevel = result.risk_level;
+    try {
+        const response = await fetch('https://prostate-cancer-risk.onrender.com/predict', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error('服务器错误');
+        const result = await response.json();
 
-                // 更新 UI
-                            // 更新 UI
-            const prob = (result.probability * 100).toFixed(1);
-            const level = result.risk_level;
-            const advice = result.advice;
+        const prob = (result.probability * 100).toFixed(1);
+        const level = result.risk_level;
+        const advice = result.advice;
 
-            riskLevelSpan.innerText = 'AI：' + level;
-            totalScoreSpan.innerText = prob + '%';
-            adviceTextDiv.innerText = advice;
+        riskLevelSpan.innerText = 'AI：' + level;
+        totalScoreSpan.innerText = prob + '%';
+        adviceTextDiv.innerText = advice;
 
-            // 卡片颜色
-            if (level === '低风险') {
-                riskCard.className = 'risk-card risk-low';
-            } else if (level === '中风险') {
-                riskCard.className = 'risk-card risk-mid';
-            } else {
-                riskCard.className = 'risk-card risk-high';
-            }
-            } catch (error) {
-                alert('无法连接到 AI 预测服务。请确认 Flask 后端已启动（python app.py）并监听 5000 端口。');
-            }
+        if (level === '低风险') {
+            riskCard.className = 'risk-card risk-low';
+        } else if (level === '中风险') {
+            riskCard.className = 'risk-card risk-mid';
+        } else {
+            riskCard.className = 'risk-card risk-high';
         }
+    } catch (error) {
+        alert('无法连接到 AI 预测服务。请确认 Flask 后端已启动（python app.py）并监听 5000 端口。');
+    }
+}
 
         // ---------- 历史记录管理 ----------
         let historyRecords = [];
