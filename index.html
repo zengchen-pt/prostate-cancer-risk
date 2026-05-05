@@ -561,20 +561,23 @@
                 const riskLevel = result.risk_level;
 
                 // 更新 UI
-                riskLevelSpan.innerText = 'AI：' + riskLevel;
-                totalScoreSpan.innerText = (probability * 100).toFixed(1) + '%';
+                            // 更新 UI
+            const prob = (result.probability * 100).toFixed(1);
+            const level = result.risk_level;
+            const advice = result.advice;
 
-                let advice = '';
-                if (probability <= 0.3) {
-                    advice = '✅ AI建议：常规随访，每年复查PSA。';
-                } else if (probability <= 0.7) {
-                    advice = '⚠️ AI建议：1~3个月复查PSA或进一步影像学评估。';
-                } else {
-                    advice = '🔴 AI建议：尽快转诊泌尿外科，考虑穿刺活检。';
-                }
-                adviceTextDiv.innerText = advice;
-                // 卡片颜色
-                riskCard.className = 'risk-card ' + (probability <= 0.3 ? 'risk-low' : (probability <= 0.7 ? 'risk-mid' : 'risk-high'));
+            riskLevelSpan.innerText = 'AI：' + level;
+            totalScoreSpan.innerText = prob + '%';
+            adviceTextDiv.innerText = advice;
+
+            // 卡片颜色
+            if (level === '低风险') {
+                riskCard.className = 'risk-card risk-low';
+            } else if (level === '中风险') {
+                riskCard.className = 'risk-card risk-mid';
+            } else {
+                riskCard.className = 'risk-card risk-high';
+            }
             } catch (error) {
                 alert('无法连接到 AI 预测服务。请确认 Flask 后端已启动（python app.py）并监听 5000 端口。');
             }
