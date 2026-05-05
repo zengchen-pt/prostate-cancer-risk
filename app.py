@@ -1,31 +1,24 @@
 ﻿from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
-import pandas as pd
 import numpy as np
 import sklearn
 import traceback
-import os  # 必须导入，用于读取环境变量 PORT
+import os
 
 app = Flask(__name__)
 CORS(app)
 
 print(f"Scikit-learn version: {sklearn.__version__}")
 
-# 加载模型
 model = joblib.load("pca_screening_model_rf_calibrated.pkl")
 print("Model loaded successfully.")
 
-# 获取模型期望的特征名
-expected_features = [
+# 模型期望的特征顺序（从日志获得）
+EXPECTED_FEATURES = [
     'age', 'tpsa', 'PV', 'PSAD', 'NLR', 'DRE',
     'BMI', 'hypertension', 'diabetes', 'hyperlipidemia', 'MRI'
 ]
-if hasattr(model, 'feature_names_in_'):
-    expected_features = list(model.feature_names_in_)
-    print(f"Model feature_names_in_: {expected_features}")
-else:
-    print(f"Using fallback feature names: {expected_features}")
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
@@ -34,33 +27,30 @@ def predict():
 
     data = request.get_json()
     try:
-        # 1. 将 DRE 转为数字（兼容前端直接发送字符串的情况）
+        # 1. 确保 DRE 是数字（前端可能发字符串）
         if 'DRE' in data and isinstance(data['DRE'], str):
             dre_map = {'normal': 0, 'suspicious': 1, 'hard': 2}
             data['DRE'] = dre_map.get(data['DRE'], 0)
 
-        # 2. 构建 DataFrame，确保所有需要的列都存在
-        df = pd.DataFrame([data])
-        for col in expected_features:
-            if col not in df.columns:
-                df[col] = 0  # 缺失列用 0 填充
+        # 2. 严格按照模型期望的顺序，提取数值并构建 NumPy 数组
+        feature_values = []
+        for col in EXPECTED_FEATURES:
+            val = data.get(col, 0)          # 缺失的列填 0
+            try:
+                val = float(val)            # 强制转为浮点数
+            except (ValueError, TypeError):
+                val = 0.0
+            feature_values.append(val)
+        
+        X = np.array([feature_values], dtype=np.float64)
 
-        # 3. 强制将所有列转为数值类型
-        #    先将所有值转为 float，无法转换的变为 NaN
-        df = df[expected_features].apply(pd.to_numeric, errors='coerce')
-        #    将所有 NaN 填充为 0
-        df.fillna(0, inplace=True)
-        #    最终确保整个 DataFrame 的数据类型为 float64
-        df = df.astype(np.float64)
+        # 可选：打印数组供日志查看
+        print("Input array:", X)
 
-        # 4. 诊断日志（可在 Render 控制台查看）
-        print("DataFrame dtypes:\n", df.dtypes)
-        print("DataFrame values:\n", df.values)
+        # 3. 直接用数组预测
+        proba = model.predict_proba(X)[0, 1]
 
-        # 5. 预测
-        proba = model.predict_proba(df)[0, 1]
-
-        # 6. 风险分级
+        # 4. 风险等级
         if proba < 0.4:
             level = '低风险'
             advice = 'AI建议：常规随访，每年复查PSA，关注症状变化。'
