@@ -7,7 +7,7 @@ app = Flask(__name__)
 CORS(app)                                      # ← 新增：允许所有来源的跨域请求
 model = joblib.load("pca_screening_model_v2.pkl")
 
-@app.route('/predict', methods=['POST'])
+@app.route('/predict', methods=['GET', 'POST'])
 def predict():
     data = request.get_json()
     try:
