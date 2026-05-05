@@ -3,33 +3,28 @@ from flask_cors import CORS
 import joblib
 import pandas as pd
 import os
+import sklearn
 
 app = Flask(__name__)
 CORS(app)
 
+print(f"Scikit-learn version: {sklearn.__version__}")
+
 model = joblib.load("pca_screening_model_rf_calibrated.pkl")
 
-# ---------- 更彻底的 monotonic_cst 修补 ----------
+# ---------- monotonic_cst 修补 ----------
 def add_monotonic_cst(obj, visited=None):
-    """
-    递归遍历对象的所有属性，为所有具有 tree_ 属性的对象
-    （即 DecisionTreeClassifier 实例）添加 monotonic_cst 属性
-    """
     if visited is None:
         visited = set()
     obj_id = id(obj)
     if obj_id in visited:
         return
     visited.add(obj_id)
-
-    # 如果对象本身就有 tree_ 属性，说明是决策树，直接设置
     if hasattr(obj, 'tree_') and not hasattr(obj, 'monotonic_cst'):
         try:
             obj.monotonic_cst = None
         except Exception:
             pass
-
-    # 遍历对象的属性
     if hasattr(obj, '__dict__'):
         for attr_name, attr_value in obj.__dict__.items():
             if isinstance(attr_value, (list, tuple, set)):
@@ -38,8 +33,6 @@ def add_monotonic_cst(obj, visited=None):
                         add_monotonic_cst(item, visited)
             elif hasattr(attr_value, '__dict__'):
                 add_monotonic_cst(attr_value, visited)
-
-    # 处理列表、字典等容器
     if isinstance(obj, dict):
         for key, val in obj.items():
             if hasattr(val, '__dict__'):
@@ -49,9 +42,8 @@ def add_monotonic_cst(obj, visited=None):
             if hasattr(item, '__dict__'):
                 add_monotonic_cst(item, visited)
 
-# 执行修补
 add_monotonic_cst(model)
-# --------------------------------------------
+# ------------------------------------
 
 @app.route('/predict', methods=['GET', 'POST'])
 def predict():
