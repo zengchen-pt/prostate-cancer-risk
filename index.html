@@ -5,260 +5,57 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>前列腺癌免活检风险筛查工具 | 莆田学院附属医院</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background: #eef2f7;
-            font-family: 'PingFang SC', 'Microsoft YaHei', 'Segoe UI', Roboto, sans-serif;
-            padding: 24px 20px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 32px;
-            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.15);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #1e3a5f 0%, #0f2b44 100%);
-            padding: 24px 32px;
-            color: white;
-        }
-        .header h1 {
-            font-size: 1.9rem;
-            font-weight: 600;
-            letter-spacing: -0.3px;
-            margin-bottom: 8px;
-        }
-        .header p {
-            opacity: 0.85;
-            font-size: 0.9rem;
-        }
-        .main-grid {
-            display: flex;
-            flex-wrap: wrap;
-        }
-        .form-section {
-            flex: 1.2;
-            padding: 32px 32px 40px;
-            background: #ffffff;
-            border-right: 1px solid #e8edf2;
-        }
-        .result-section {
-            flex: 0.9;
-            padding: 32px;
-            background: #fafcff;
-        }
-        .form-group {
-            margin-bottom: 20px;
-        }
-        label {
-            display: block;
-            font-weight: 600;
-            color: #1e293b;
-            margin-bottom: 6px;
-            font-size: 0.9rem;
-        }
-        .required::after {
-            content: "*";
-            color: #e53e3e;
-            margin-left: 4px;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px 14px;
-            font-size: 0.95rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 16px;
-            transition: 0.2s;
-            background: #fff;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: #2c7da0;
-            box-shadow: 0 0 0 3px rgba(44,125,160,0.2);
-        }
-        .inline-hint {
-            font-size: 0.7rem;
-            color: #5b6e8c;
-            margin-top: 4px;
-        }
-        .row-2cols {
-            display: flex;
-            gap: 16px;
-        }
-        .row-2cols .form-group {
-            flex: 1;
-        }
-        .row-3cols {
-            display: flex;
-            gap: 16px;
-        }
-        .row-3cols .form-group {
-            flex: 1;
-        }
-        .computed-value {
-            background: #eef2ff;
-            border-radius: 20px;
-            padding: 8px 14px;
-            margin-top: 6px;
-            font-size: 0.85rem;
-            color: #1e3a5f;
-            display: inline-block;
-            font-weight: 500;
-        }
-        details {
-            margin: 20px 0 12px;
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 12px 16px;
-            border: 1px solid #e2e8f0;
-        }
-        summary {
-            font-weight: 600;
-            cursor: pointer;
-            color: #2c7da0;
-        }
-        .checkbox-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 10px;
-        }
-        .checkbox-group label {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-weight: normal;
-            cursor: pointer;
-        }
-        button {
-            background: #2c7da0;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 1rem;
-            font-weight: 600;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: all 0.2s;
-            margin-right: 12px;
-            margin-top: 8px;
-        }
-        button:hover {
-            background: #1e5a77;
-            transform: translateY(-1px);
-        }
-        .btn-reset {
-            background: #94a3b8;
-        }
-        .btn-reset:hover {
-            background: #64748b;
-        }
-        .btn-history {
-            background: #6c63ff;
-        }
-        .btn-history:hover {
-            background: #5a52d6;
-        }
-        .risk-card {
-            border-radius: 28px;
-            padding: 28px 22px;
-            margin-bottom: 20px;
-            transition: all 0.2s;
-            text-align: center;
-            background: #fff;
-        }
-        .risk-low {
-            background: #dcfce7;
-            border-left: 8px solid #22c55e;
-        }
-        .risk-mid {
-            background: #fef9c3;
-            border-left: 8px solid #f59e0b;
-        }
-        .risk-high {
-            background: #fee2e2;
-            border-left: 8px solid #ef4444;
-        }
-        .risk-level {
-            font-size: 2rem;
-            font-weight: 800;
-            margin: 12px 0;
-        }
-        .score-number {
-            font-size: 2.8rem;
-            font-weight: 800;
-            color: #1e293b;
-            margin: 8px 0;
-        }
-        .advice-text {
-            background: white;
-            border-radius: 28px;
-            padding: 20px;
-            margin-top: 20px;
-            font-size: 0.95rem;
-            line-height: 1.5;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-        }
-        .detail-table {
-            background: white;
-            border-radius: 24px;
-            padding: 16px;
-            margin-top: 20px;
-            font-size: 0.85rem;
-            border: 1px solid #e2e8f0;
-        }
-        .detail-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dashed #eef2f7;
-        }
-        .history-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .history-content {
-            background: white;
-            border-radius: 28px;
-            width: 90%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            padding: 24px;
-        }
-        hr {
-            margin: 20px 0;
-            border: 0;
-            height: 1px;
-            background: #e2e8f0;
-        }
-        @media (max-width: 800px) {
-            .main-grid { flex-direction: column; }
-            .form-section { border-right: none; }
-            .row-2cols { flex-direction: column; gap: 0; }
-            .row-3cols { flex-direction: column; gap: 0; }
-        }
-        footer {
-            text-align: center;
-            font-size: 0.75rem;
-            color: #94a3b8;
-            padding: 20px;
-            border-top: 1px solid #e2e8f0;
-            background: #fff;
-        }
+        /* 原有样式全部保留，此处省略，与你的原版完全一致 */
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { background:#eef2f7; font-family:'PingFang SC','Microsoft YaHei','Segoe UI',Roboto,sans-serif; padding:24px 20px; }
+        .container { max-width:1400px; margin:0 auto; background:white; border-radius:32px; box-shadow:0 20px 35px -12px rgba(0,0,0,0.15); overflow:hidden; }
+        .header { background:linear-gradient(135deg, #1e3a5f 0%, #0f2b44 100%); padding:24px 32px; color:white; }
+        .header h1 { font-size:1.9rem; font-weight:600; letter-spacing:-0.3px; margin-bottom:8px; }
+        .header p { opacity:0.85; font-size:0.9rem; }
+        .main-grid { display:flex; flex-wrap:wrap; }
+        .form-section { flex:1.2; padding:32px 32px 40px; background:#ffffff; border-right:1px solid #e8edf2; }
+        .result-section { flex:0.9; padding:32px; background:#fafcff; }
+        .form-group { margin-bottom:20px; }
+        label { display:block; font-weight:600; color:#1e293b; margin-bottom:6px; font-size:0.9rem; }
+        .required::after { content:"*"; color:#e53e3e; margin-left:4px; }
+        input, select { width:100%; padding:10px 14px; font-size:0.95rem; border:1px solid #cbd5e1; border-radius:16px; transition:0.2s; background:#fff; }
+        input:focus, select:focus { outline:none; border-color:#2c7da0; box-shadow:0 0 0 3px rgba(44,125,160,0.2); }
+        .inline-hint { font-size:0.7rem; color:#5b6e8c; margin-top:4px; }
+        .row-2cols { display:flex; gap:16px; }
+        .row-2cols .form-group { flex:1; }
+        .row-3cols { display:flex; gap:16px; }
+        .row-3cols .form-group { flex:1; }
+        .computed-value { background:#eef2ff; border-radius:20px; padding:8px 14px; margin-top:6px; font-size:0.85rem; color:#1e3a5f; display:inline-block; font-weight:500; }
+        details { margin:20px 0 12px; background:#f8fafc; border-radius:20px; padding:12px 16px; border:1px solid #e2e8f0; }
+        summary { font-weight:600; cursor:pointer; color:#2c7da0; }
+        .checkbox-group { display:flex; flex-wrap:wrap; gap:15px; margin-top:10px; }
+        .checkbox-group label { display:inline-flex; align-items:center; gap:6px; font-weight:normal; cursor:pointer; }
+        button { background:#2c7da0; color:white; border:none; padding:12px 24px; font-size:1rem; font-weight:600; border-radius:40px; cursor:pointer; transition:all 0.2s; margin-right:12px; margin-top:8px; }
+        button:hover { background:#1e5a77; transform:translateY(-1px); }
+        .btn-reset { background:#94a3b8; }
+        .btn-reset:hover { background:#64748b; }
+        .btn-history { background:#6c63ff; }
+        .btn-history:hover { background:#5a52d6; }
+        .btn-print { background:#4caf50; }
+        .btn-print:hover { background:#388e3c; }
+        .btn-ai { background:#f97316; }  /* AI 按钮用橙色 */
+        .btn-ai:hover { background:#ea580c; }
+        .risk-card { border-radius:28px; padding:28px 22px; margin-bottom:20px; transition:all 0.2s; text-align:center; background:#fff; }
+        .risk-low { background:#dcfce7; border-left:8px solid #22c55e; }
+        .risk-mid { background:#fef9c3; border-left:8px solid #f59e0b; }
+        .risk-high { background:#fee2e2; border-left:8px solid #ef4444; }
+        .risk-level { font-size:2rem; font-weight:800; margin:12px 0; }
+        .score-number { font-size:2.8rem; font-weight:800; color:#1e293b; margin:8px 0; }
+        .advice-text { background:white; border-radius:28px; padding:20px; margin-top:20px; font-size:0.95rem; line-height:1.5; border:1px solid #e2e8f0; box-shadow:0 2px 8px rgba(0,0,0,0.05); }
+        .detail-table { background:white; border-radius:24px; padding:16px; margin-top:20px; font-size:0.85rem; border:1px solid #e2e8f0; }
+        .detail-item { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #eef2f7; }
+        .history-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); justify-content:center; align-items:center; z-index:1000; }
+        .history-content { background:white; border-radius:28px; width:90%; max-width:600px; max-height:80vh; overflow-y:auto; padding:24px; }
+        .save-status { font-size:0.75rem; color:#5b6e8c; margin-top:8px; }
+        hr { margin:20px 0; border:0; height:1px; background:#e2e8f0; }
+        @media (max-width:800px) { .main-grid { flex-direction:column; } .form-section { border-right:none; } .row-2cols { flex-direction:column; gap:0; } .row-3cols { flex-direction:column; gap:0; } }
+        @media print { body { background:white; padding:0; } .container { box-shadow:none; border-radius:0; } .form-section { display:none; } .header { background:#1e3a5f!important; -webkit-print-color-adjust:exact; } .risk-card { break-inside:avoid; } }
+        footer { text-align:center; font-size:0.75rem; color:#94a3b8; padding:20px; border-top:1px solid #e2e8f0; background:#fff; }
     </style>
 </head>
 <body>
@@ -295,25 +92,25 @@
                     <div class="form-group">
                         <label>游离PSA (fPSA, ng/mL)</label>
                         <input type="number" id="fpsa" step="0.01" min="0" value="1.2">
-                        <div class="inline-hint">用于参考 f/t 比值，不参与评分</div>
+                        <div class="inline-hint">用于计算 f/t 比值及联合指数评分</div>
                     </div>
                     <div class="form-group">
                         <label class="required">前列腺三径 (cm)</label>
                         <div class="row-3cols" style="gap: 8px;">
                             <div style="flex:1">
-                                <input type="number" id="apDiam" step="0.1" min="0.1" value="5.0" placeholder="上下径" required>
+                                <input type="number" id="apDiam" step="0.1" min="0.1" max="15" value="5.0" placeholder="上下径" required>
                                 <div class="inline-hint">上下径</div>
                             </div>
                             <div style="flex:1">
-                                <input type="number" id="lrDiam" step="0.1" min="0.1" value="4.5" placeholder="左右径" required>
+                                <input type="number" id="lrDiam" step="0.1" min="0.1" max="15" value="4.5" placeholder="左右径" required>
                                 <div class="inline-hint">左右径</div>
                             </div>
                             <div style="flex:1">
-                                <input type="number" id="paDiam" step="0.1" min="0.1" value="3.0" placeholder="前后径" required>
+                                <input type="number" id="paDiam" step="0.1" min="0.1" max="15" value="3.0" placeholder="前后径" required>
                                 <div class="inline-hint">前后径</div>
                             </div>
                         </div>
-                        <div class="inline-hint">测算公式：体积(mL)=上下径×左右径×前后径×0.52</div>
+                        <div class="inline-hint">测算公式：体积(mL)=上下径×左右径×前后径×π/6</div>
                     </div>
                 </div>
                 <input type="hidden" id="pv" value="35.1">
@@ -328,7 +125,7 @@
                 <div class="row-2cols">
                     <div class="form-group">
                         <label class="required">中性粒细胞计数 (NEUT#, 10^9/L)</label>
-                        <input type="number" id="neut" step="0.1" min="0" value="4.8" required>
+                        <input type="number" id="neut" step="0.1" min="0.1" value="4.8" required>
                     </div>
                     <div class="form-group">
                         <label class="required">淋巴细胞计数 (LYMPH#, 10^9/L)</label>
@@ -339,7 +136,7 @@
                     <div class="form-group">
                         <label>单核细胞计数 (MONO#, 10^9/L)</label>
                         <input type="number" id="mono" step="0.1" min="0" value="0.5">
-                        <div class="inline-hint">用于计算MLR，反映全身炎症负荷[1]; 血常规未包含单核细胞时可选填</div>
+                        <div class="inline-hint">用于计算MLR，反映全身炎症负荷; 可选填</div>
                     </div>
                     <div class="form-group">
                         <label>血小板计数 (PLT, 10^9/L)</label>
@@ -416,6 +213,7 @@
                 </details>
                 <div style="margin-top: 16px; display: flex; flex-wrap: wrap; gap: 12px;">
                     <button type="button" id="calcBtn">🔍 计算风险</button>
+                    <button type="button" id="aiPredictBtn" class="btn-ai">🤖 AI 预测</button>
                     <button type="button" id="resetBtn" class="btn-reset">🗑️ 重置</button>
                     <button type="button" id="historyBtn" class="btn-history">📋 历史记录</button>
                 </div>
@@ -423,7 +221,7 @@
             <div class="inline-hint" style="margin-top: 20px;">* 所有指标均可在乡镇卫生院/社区中心获得。评分参考2025版中国指南及国际共识设计，仅供临床参考。</div>
         </div>
 
-        <div class="result-section">
+        <div class="result-section" aria-live="polite">
             <div id="riskCard" class="risk-card risk-low">
                 <div style="font-size: 0.9rem; opacity: 0.7;">风险评估结果</div>
                 <div class="risk-level" id="riskLevel">低风险</div>
@@ -445,6 +243,10 @@
                     <div class="detail-item"><span>选填加分</span><span id="detailExtra">—</span></div>
                     <div class="detail-item" style="font-weight: 700; border-bottom: none;"><span>总 分</span><span id="detailTotal">—</span></div>
                 </div>
+            </div>
+            <div class="save-status" id="saveStatus"></div>
+            <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px;">
+                <button type="button" id="printBtn" class="btn-print">🖨️ 打印报告</button>
             </div>
             <div style="margin-top: 16px; font-size: 0.7rem; color: #5b6e8c;">
                 * 基于《2025中国前列腺癌诊疗指南》及国际共识。<br>
@@ -515,6 +317,7 @@
         const detailFtPsadIndex = document.getElementById('detailFtPsadIndex');
         const detailExtra = document.getElementById('detailExtra');
         const detailTotal = document.getElementById('detailTotal');
+        const saveStatusSpan = document.getElementById('saveStatus');
 
         // ---------- 辅助函数 ----------
         function updateVolume() {
@@ -522,7 +325,7 @@
             let lr = parseFloat(lrDiam.value);
             let pa = parseFloat(paDiam.value);
             if (!isNaN(ap) && !isNaN(lr) && !isNaN(pa) && ap > 0 && lr > 0 && pa > 0) {
-                let vol = ap * lr * pa * 0.52;
+                let vol = ap * lr * pa * (Math.PI / 6);
                 vol = Math.round(vol * 10) / 10;
                 pvHidden.value = vol;
                 pvDisplaySpan.innerText = vol.toFixed(1) + ' mL';
@@ -558,14 +361,7 @@
             }
         }
 
-        function getMlr() {
-            let mono = parseFloat(monoInput.value);
-            let lymph = parseFloat(lymphInput.value);
-            if (!isNaN(mono) && !isNaN(lymph) && lymph > 0) return mono / lymph;
-            return null;
-        }
-
-        // 评分函数
+        // 评分函数（保留原逻辑）
         function getPsadScore(psad) {
             if (psad < 0.15) return 0;
             if (psad <= 0.25) return 15;
@@ -590,18 +386,6 @@
             if (!mlr || isNaN(mlr)) return 0;
             return mlr >= 0.3 ? 6 : 0;
         }
-        function getFtPsadComposite() {
-            let tpsa = parseFloat(tpsaInput.value);
-            let fpsa = parseFloat(fpsaInput.value);
-            let pv = parseFloat(pvHidden.value);
-            if (isNaN(tpsa) || isNaN(fpsa) || isNaN(pv) || pv <= 0) return { score: 0, note: '' };
-            let ftRatio = tpsa > 0 ? fpsa / tpsa : 0;
-            let psad = tpsa / pv;
-            if (psad <= 0) return { score: 0, note: '' };
-            let composite = ftRatio / psad;
-            if (composite <= 0.6) return { score: 12, note: '低复合值提示高风险' };
-            return { score: 0, note: '高复合值有助于避免不必要穿刺' };
-        }
         function getExtraScore(bmi, smoking, hypertension, diabetes, hyperlipidemia) {
             let extra = 0;
             if (bmi && !isNaN(bmi) && bmi >= 28) extra += 5;
@@ -612,75 +396,96 @@
             return extra;
         }
 
-        // ---------- 核心计算与UI刷新（不保存历史） ----------
+        function calculateAllScores() {
+            const age = Math.round(parseInt(ageInput.value));
+            const tpsa = parseFloat(tpsaInput.value);
+            const pv = parseFloat(pvHidden.value);
+            const neut = parseFloat(neutInput.value);
+            const lymph = parseFloat(lymphInput.value);
+            const mono = parseFloat(monoInput.value);
+            const bmi = parseFloat(bmiInput.value);
+            const smoking = parseFloat(smokingInput.value);
+            const hypertension = htnCheck.checked;
+            const diabetes = dmCheck.checked;
+            const hyperlipidemia = hlpCheck.checked;
+            const dreVal = dreSelect.value;
+            const fpsa = parseFloat(fpsaInput.value);
+
+            const errors = [];
+            if (isNaN(age) || age < 40 || age > 100) errors.push('年龄需在40-100之间');
+            if (isNaN(tpsa) || tpsa < 0) errors.push('总PSA无效');
+            if (isNaN(pv) || pv <= 0) errors.push('前列腺体积无效');
+            if (isNaN(neut) || neut <= 0 || isNaN(lymph) || lymph <= 0) errors.push('血常规数值无效');
+            if (!isNaN(fpsa) && !isNaN(tpsa) && fpsa > tpsa) errors.push('fPSA不应大于tPSA');
+
+            if (errors.length > 0) return { errors };
+
+            const psad = tpsa / pv;
+            const nlr = neut / lymph;
+            const mlr = (!isNaN(mono) && lymph > 0) ? mono / lymph : null;
+            const ftRatio = (tpsa > 0 && !isNaN(fpsa)) ? fpsa / tpsa : null;
+            const composite = (!isNaN(fpsa) && psad > 0) ? (ftRatio / psad) : null;
+            const compositeNote = composite !== null
+                ? (composite <= 0.6 ? '低复合值提示高风险' : '高复合值有助于避免不必要穿刺')
+                : '';
+
+            const scores = {
+                psad: getPsadScore(psad),
+                age: getAgeScore(age),
+                nlr: getNlrScore(nlr),
+                dre: getDreScore(dreVal),
+                mlr: (mlr !== null) ? getMlrScore(mlr) : 0,
+                composite: (composite !== null && composite <= 0.6) ? 12 : 0,
+                extra: getExtraScore(bmi, smoking, hypertension, diabetes, hyperlipidemia),
+            };
+            scores.total = Object.values(scores).reduce((a, b) => a + b, 0);
+
+            return {
+                errors: [],
+                raw: { psad, nlr, mlr, composite },
+                scores,
+                compositeNote,
+                age, tpsa, pv, neut, lymph, mono
+            };
+        }
+
         function refreshUI() {
-            // 获取表单值
-            let age = parseInt(ageInput.value);
-            let tpsa = parseFloat(tpsaInput.value);
-            let pv = parseFloat(pvHidden.value);
-            let neut = parseFloat(neutInput.value);
-            let lymph = parseFloat(lymphInput.value);
-            let dreVal = dreSelect.value;
-            let bmi = parseFloat(bmiInput.value);
-            let smoking = parseFloat(smokingInput.value);
-            let hypertension = htnCheck.checked;
-            let diabetes = dmCheck.checked;
-            let hyperlipidemia = hlpCheck.checked;
-            let mono = parseFloat(monoInput.value);
-            let mlr = getMlr();
-            let compositeRes = getFtPsadComposite();
-
-            // 校验
-            if (isNaN(age) || age < 40 || age > 100) {
-                // 显示占位符，不清空已有的正确结果，可以简单返回或显示错误提示
+            const result = calculateAllScores();
+            if (result.errors.length > 0) {
                 totalScoreSpan.innerText = '—';
                 riskLevelSpan.innerText = '无效输入';
-                adviceTextDiv.innerText = '请检查年龄 (40-100岁)';
-                return;
-            }
-            if (isNaN(tpsa) || tpsa < 0) {
-                totalScoreSpan.innerText = '—';
-                riskLevelSpan.innerText = '无效输入';
-                adviceTextDiv.innerText = '请检查PSA值';
-                return;
-            }
-            if (isNaN(pv) || pv <= 0) {
-                totalScoreSpan.innerText = '—';
-                riskLevelSpan.innerText = '无效输入';
-                adviceTextDiv.innerText = '请确保前列腺体积为正数';
-                return;
-            }
-            if (isNaN(neut) || neut < 0 || isNaN(lymph) || lymph <= 0) {
-                totalScoreSpan.innerText = '—';
-                riskLevelSpan.innerText = '无效输入';
-                adviceTextDiv.innerText = '请检查血常规数值';
+                adviceTextDiv.innerText = result.errors.join('；');
+                detailPsad.innerText = '—';
+                detailAge.innerText = '—';
+                detailNlr.innerText = '—';
+                detailDre.innerText = '—';
+                detailMlr.innerText = '—';
+                detailFtPsadIndex.innerText = '—';
+                detailExtra.innerText = '—';
+                detailTotal.innerText = '—';
                 return;
             }
 
-            let psad = tpsa / pv;
-            let nlr = neut / lymph;
-            let mlrScore = (mlr !== null) ? getMlrScore(mlr) : 0;
-            let compositeScore = compositeRes.score;
-            let extra = getExtraScore(bmi, smoking, hypertension, diabetes, hyperlipidemia);
-            let total = getPsadScore(psad) + getAgeScore(age) + getNlrScore(nlr) + getDreScore(dreVal) + mlrScore + compositeScore + extra;
+            const { scores, raw, compositeNote } = result;
 
-            // 更新明细
-            detailPsad.innerText = getPsadScore(psad);
-            detailAge.innerText = getAgeScore(age);
-            detailNlr.innerText = getNlrScore(nlr);
-            detailDre.innerText = getDreScore(dreVal);
-            detailMlr.innerText = (mlr !== null) ? (mlrScore + ' (MLR: ' + mlr.toFixed(3) + ')') : '未评';
-            detailFtPsadIndex.innerText = compositeScore + ' (' + compositeRes.note + ')';
-            detailExtra.innerText = extra;
-            detailTotal.innerText = total;
-            totalScoreSpan.innerText = total;
+            detailPsad.innerText = scores.psad;
+            detailAge.innerText = scores.age;
+            detailNlr.innerText = scores.nlr;
+            detailDre.innerText = scores.dre;
+            detailMlr.innerText = (raw.mlr !== null) 
+                ? (scores.mlr + ' (MLR: ' + raw.mlr.toFixed(3) + ')') 
+                : '未评';
+            detailFtPsadIndex.innerText = scores.composite + (compositeNote ? ' (' + compositeNote + ')' : '');
+            detailExtra.innerText = scores.extra;
+            detailTotal.innerText = scores.total;
+            totalScoreSpan.innerText = scores.total;
 
             let level = '', advice = '', cardClass = '';
-            if (total < 50) {
+            if (scores.total < 50) {
                 level = '低风险';
                 advice = '✅ 建议：常规随访，每年复查PSA，关注症状变化。';
                 cardClass = 'risk-low';
-            } else if (total <= 80) {
+            } else if (scores.total <= 80) {
                 level = '中风险';
                 advice = '⚠️ 建议：1~3个月内复查PSA，或转诊县级医院进一步评估（如多参数MRI或重复PSA检测）。';
                 cardClass = 'risk-mid';
@@ -694,47 +499,162 @@
             riskCard.className = `risk-card ${cardClass}`;
         }
 
+        // ---------- AI 预测相关 ----------
+        // 从 MRI 结果文本中提取 PI‑RADS 类别（与 Python 训练一致）
+        function getMRICategory() {
+            const text = mriResultInput.value.trim();
+            if (!text) return 0;
+            const matches = text.match(/PI-?\s*RADS\s*(\d+)/i);
+            if (!matches) return 0;
+            const scores = matches.map(m => parseInt(m));
+            const maxScore = Math.max(...scores);
+            if (maxScore >= 4) return 3;
+            if (maxScore === 3) return 2;
+            if (maxScore >= 1 && maxScore <= 2) return 1;
+            return 0;
+        }
+
+        async function predictWithAI() {
+            // 数据校验（与原有逻辑类似）
+            const age = parseInt(ageInput.value);
+            const tpsa = parseFloat(tpsaInput.value);
+            const pv = parseFloat(pvHidden.value);
+            const neut = parseFloat(neutInput.value);
+            const lymph = parseFloat(lymphInput.value);
+            if (isNaN(age) || age < 40 || age > 100) { alert('年龄需在40-100之间'); return; }
+            if (isNaN(tpsa) || tpsa < 0) { alert('总PSA无效'); return; }
+            if (isNaN(pv) || pv <= 0) { alert('前列腺体积无效'); return; }
+            if (isNaN(neut) || neut <= 0 || isNaN(lymph) || lymph <= 0) { alert('血常规数值无效'); return; }
+
+            const psad = tpsa / pv;
+            const nlr = neut / lymph;
+            const bmi = parseFloat(bmiInput.value) || 24;  // 默认值
+            const hypertension = htnCheck.checked ? 1 : 0;
+            const diabetes = dmCheck.checked ? 1 : 0;
+            const hyperlipidemia = hlpCheck.checked ? 1 : 0;
+            const mriCategory = getMRICategory();
+            const dre = dreSelect.value;
+
+            const payload = {
+                age: age,
+                tpsa: tpsa,
+                PV: pv,
+                PSAD: psad,
+                NLR: nlr,
+                BMI: bmi,
+                hypertension: hypertension,
+                diabetes: diabetes,
+                hyperlipidemia: hyperlipidemia,
+                MRI: mriCategory,
+                DRE: dre
+            };
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!response.ok) throw new Error('服务器错误');
+                const result = await response.json();
+                const probability = result.probability;
+                const riskLevel = result.risk_level;
+
+                // 更新 UI
+                riskLevelSpan.innerText = 'AI：' + riskLevel;
+                totalScoreSpan.innerText = (probability * 100).toFixed(1) + '%';
+
+                let advice = '';
+                if (probability <= 0.3) {
+                    advice = '✅ AI建议：常规随访，每年复查PSA。';
+                } else if (probability <= 0.7) {
+                    advice = '⚠️ AI建议：1~3个月复查PSA或进一步影像学评估。';
+                } else {
+                    advice = '🔴 AI建议：尽快转诊泌尿外科，考虑穿刺活检。';
+                }
+                adviceTextDiv.innerText = advice;
+                // 卡片颜色
+                riskCard.className = 'risk-card ' + (probability <= 0.3 ? 'risk-low' : (probability <= 0.7 ? 'risk-mid' : 'risk-high'));
+            } catch (error) {
+                alert('无法连接到 AI 预测服务。请确认 Flask 后端已启动（python app.py）并监听 5000 端口。');
+            }
+        }
+
         // ---------- 历史记录管理 ----------
         let historyRecords = [];
+        let lastSaveTime = null;
+
         function loadHistory() {
             try {
                 let saved = localStorage.getItem('pca_risk_history');
-                if (saved) historyRecords = JSON.parse(saved);
-                else historyRecords = [];
-            } catch(e) { historyRecords = []; }
+                if (saved) {
+                    historyRecords = JSON.parse(saved);
+                    if (historyRecords.length > 0) {
+                        lastSaveTime = new Date(historyRecords[0].timestamp);
+                        if (!isNaN(lastSaveTime)) {
+                            saveStatusSpan.innerText = '✅ 上次保存：' + lastSaveTime.toLocaleString();
+                        }
+                    }
+                } else {
+                    historyRecords = [];
+                }
+            } catch(e) {
+                historyRecords = [];
+                console.warn('localStorage 不可用，历史记录将仅在本次会话中保存');
+            }
         }
+
         function addRecord(record) {
             historyRecords.unshift(record);
-            if (historyRecords.length > 200) historyRecords.pop();
-            localStorage.setItem('pca_risk_history', JSON.stringify(historyRecords));
+            if (historyRecords.length > 1000) historyRecords.pop();
+            try {
+                localStorage.setItem('pca_risk_history', JSON.stringify(historyRecords));
+                lastSaveTime = new Date();
+                saveStatusSpan.innerText = '✅ 上次保存：' + lastSaveTime.toLocaleString();
+            } catch(e) {
+                saveStatusSpan.innerText = '⚠️ 存储空间不足，请清理历史记录';
+                console.warn('localStorage 写入失败');
+            }
         }
+
         function displayHistory() {
-            let listDiv = document.getElementById('historyList');
+            const listDiv = document.getElementById('historyList');
             if (!listDiv) return;
+            listDiv.innerHTML = '';
             if (historyRecords.length === 0) {
-                listDiv.innerHTML = '<p>暂无记录</p>';
+                listDiv.textContent = '暂无记录';
                 return;
             }
-            let html = '<ul style="list-style: none; padding: 0;">';
-            for (let r of historyRecords) {
-                html += `<li style="border-bottom:1px solid #e2e8f0; padding:10px 0;">
-                            <strong>${r.checkId || '无检查号'}</strong> | ${r.patientName || ''} | ${r.timestamp}<br>
-                            总分：${r.totalScore}(${r.riskLevel}) | PSA:${r.tpsa} | PSAD:${r.psad} | 年龄:${r.age}
-                         </li>`;
-            }
-            html += '</ul>';
-            listDiv.innerHTML = html;
+            const ul = document.createElement('ul');
+            ul.style.listStyle = 'none';
+            ul.style.padding = '0';
+            historyRecords.forEach(r => {
+                const li = document.createElement('li');
+                li.style.borderBottom = '1px solid #e2e8f0';
+                li.style.padding = '10px 0';
+                const strong = document.createElement('strong');
+                strong.textContent = r.checkId || '无检查号';
+                li.appendChild(strong);
+                li.appendChild(document.createTextNode(` | ${r.patientName || ''} | ${r.timestamp}`));
+                li.appendChild(document.createElement('br'));
+                li.appendChild(document.createTextNode(`总分：${r.totalScore}(${r.riskLevel}) | PSA:${r.tpsa} | PSAD:${r.psad} | 年龄:${r.age}`));
+                ul.appendChild(li);
+            });
+            listDiv.appendChild(ul);
         }
+
         function clearAllHistory() {
             historyRecords = [];
-            localStorage.removeItem('pca_risk_history');
+            try {
+                localStorage.removeItem('pca_risk_history');
+            } catch(e) {}
+            lastSaveTime = null;
+            saveStatusSpan.innerText = '';
             displayHistory();
         }
+
         function exportHistoryToCSV() {
-            if (historyRecords.length === 0) {
-                alert("暂无历史记录可导出！");
-                return;
-            }
+            if (historyRecords.length === 0) { alert("暂无历史记录可导出！"); return; }
             const headers = [
                 "检查号", "患者姓名", "时间戳", "年龄(岁)", "总PSA(ng/mL)", "游离PSA(ng/mL)", 
                 "上下径(cm)", "左右径(cm)", "前后径(cm)", "计算体积(mL)", "PSAD(ng/mL³)",
@@ -763,9 +683,7 @@
                 return str;
             };
             const csvRows = [headers.map(escapeCSV).join(",")];
-            for (let row of rows) {
-                csvRows.push(row.map(escapeCSV).join(","));
-            }
+            for (let row of rows) csvRows.push(row.map(escapeCSV).join(","));
             const csvContent = csvRows.join("\n");
             const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
             const link = document.createElement("a");
@@ -778,126 +696,51 @@
             URL.revokeObjectURL(url);
         }
 
-        // ---------- 计算并保存（仅按钮触发） ----------
         function computeAndSave() {
-            // 先刷新UI（确保结果显示正确）
+            const result = calculateAllScores();
+            if (result.errors.length > 0) { alert("数据校验未通过：\n" + result.errors.join('\n')); return; }
             refreshUI();
-            // 获取所有当前值（与 refreshUI 中的逻辑保持一致，但需要构造完整的 record）
-            let checkId = checkIdInput.value.trim();
-            let patientName = patientNameInput.value.trim();
-            let age = parseInt(ageInput.value);
-            let tpsa = parseFloat(tpsaInput.value);
-            let fpsa = parseFloat(fpsaInput.value);
-            let ap = parseFloat(apDiam.value);
-            let lr = parseFloat(lrDiam.value);
-            let pa = parseFloat(paDiam.value);
-            let pv = parseFloat(pvHidden.value);
-            let neut = parseFloat(neutInput.value);
-            let lymph = parseFloat(lymphInput.value);
-            let mono = parseFloat(monoInput.value);
-            let plt = parseFloat(pltInput.value);
-            let dreVal = dreSelect.value;
-            let bmi = parseFloat(bmiInput.value);
-            let smoking = parseFloat(smokingInput.value);
-            let hypertension = htnCheck.checked;
-            let diabetes = dmCheck.checked;
-            let hyperlipidemia = hlpCheck.checked;
-            let mriStatus = mriStatusSelect.value;
-            let mriResult = (mriStatus === 'yes') ? mriResultInput.value.trim() : '';
-            let biopsyStatus = biopsyStatusSelect.value;
-            let biopsyTimes = (biopsyStatus === 'yes') ? biopsyTimesSelect.value : '';
-
-            // 再次校验，避免保存无效数据
-            if (isNaN(age) || age < 40 || age > 100) {
-                alert("年龄无效，无法保存记录");
-                return;
-            }
-            if (isNaN(tpsa) || tpsa < 0) {
-                alert("总PSA无效，无法保存记录");
-                return;
-            }
-            if (isNaN(pv) || pv <= 0) {
-                alert("前列腺体积无效，无法保存记录");
-                return;
-            }
-            if (isNaN(neut) || neut < 0 || isNaN(lymph) || lymph <= 0) {
-                alert("血常规数据无效，无法保存记录");
-                return;
-            }
-
-            let psad = tpsa / pv;
-            let nlr = neut / lymph;
-            let mlr = (isNaN(mono) || lymph <= 0) ? null : mono / lymph;
-            let compositeRes = getFtPsadComposite();
-            let psadScore = getPsadScore(psad);
-            let ageScore = getAgeScore(age);
-            let nlrScore = getNlrScore(nlr);
-            let dreScore = getDreScore(dreVal);
-            let mlrScore = (mlr !== null) ? getMlrScore(mlr) : 0;
-            let compositeScore = compositeRes.score;
-            let extra = getExtraScore(bmi, smoking, hypertension, diabetes, hyperlipidemia);
-            let total = psadScore + ageScore + nlrScore + dreScore + mlrScore + compositeScore + extra;
-            let level = '';
-            if (total < 50) level = '低风险';
-            else if (total <= 80) level = '中风险';
-            else level = '高风险';
-
+            const { scores, raw, age, tpsa, pv, neut, lymph, mono } = result;
+            const level = scores.total < 50 ? '低风险' : (scores.total <= 80 ? '中风险' : '高风险');
             const record = {
-                checkId, patientName, timestamp: new Date().toLocaleString(),
-                age, tpsa: tpsa.toFixed(2), fpsa: isNaN(fpsa) ? '' : fpsa.toFixed(2),
-                apDiam: ap.toFixed(1), lrDiam: lr.toFixed(1), paDiam: pa.toFixed(1), pv: pv.toFixed(1),
-                psad: psad.toFixed(3), neut: neut.toFixed(1), lymph: lymph.toFixed(1), nlr: nlr.toFixed(2),
-                mono: isNaN(mono) ? '' : mono.toFixed(1), mlr: mlr !== null ? mlr.toFixed(3) : '', plt: isNaN(plt) ? '' : plt.toFixed(0),
-                dre: dreVal === 'normal' ? '正常' : (dreVal === 'suspicious' ? '可疑结节' : '质硬'),
-                bmi: isNaN(bmi) ? '' : bmi.toFixed(1), smoking: isNaN(smoking) ? '' : smoking,
-                hypertension, diabetes, hyperlipidemia,
-                mriStatus, mriResult, biopsyStatus, biopsyTimes,
-                psadScore, ageScore, nlrScore, dreScore, mlrScore, compositeScore, extraScore: extra,
-                totalScore: total, riskLevel: level,
-                advice: (total < 50) ? '✅ 建议：常规随访，每年复查PSA，关注症状变化。' :
-                        (total <= 80) ? '⚠️ 建议：1~3个月内复查PSA，或转诊县级医院进一步评估（如多参数MRI或重复PSA检测）。' :
-                        '🔴 建议：尽快转诊至三甲医院（莆田学院附属医院）泌尿外科，考虑前列腺穿刺活检明确诊断。'
+                checkId: checkIdInput.value.trim(), patientName: patientNameInput.value.trim(),
+                timestamp: new Date().toLocaleString(), age, tpsa: tpsa.toFixed(2),
+                fpsa: isNaN(parseFloat(fpsaInput.value)) ? '' : parseFloat(fpsaInput.value).toFixed(2),
+                apDiam: parseFloat(apDiam.value).toFixed(1), lrDiam: parseFloat(lrDiam.value).toFixed(1),
+                paDiam: parseFloat(paDiam.value).toFixed(1), pv: pv.toFixed(1), psad: raw.psad.toFixed(3),
+                neut: neut.toFixed(1), lymph: lymph.toFixed(1), nlr: raw.nlr.toFixed(2),
+                mono: isNaN(mono) ? '' : mono.toFixed(1), mlr: raw.mlr !== null ? raw.mlr.toFixed(3) : '',
+                plt: isNaN(parseFloat(pltInput.value)) ? '' : parseFloat(pltInput.value).toFixed(0),
+                dre: dreSelect.value === 'normal' ? '正常' : (dreSelect.value === 'suspicious' ? '可疑结节' : '质硬'),
+                bmi: isNaN(parseFloat(bmiInput.value)) ? '' : parseFloat(bmiInput.value).toFixed(1),
+                smoking: isNaN(parseFloat(smokingInput.value)) ? '' : parseFloat(smokingInput.value),
+                hypertension: htnCheck.checked, diabetes: dmCheck.checked, hyperlipidemia: hlpCheck.checked,
+                mriStatus: mriStatusSelect.value,
+                mriResult: (mriStatusSelect.value === 'yes') ? mriResultInput.value.trim() : '',
+                biopsyStatus: biopsyStatusSelect.value,
+                biopsyTimes: (biopsyStatusSelect.value === 'yes') ? biopsyTimesSelect.value : '',
+                psadScore: scores.psad, ageScore: scores.age, nlrScore: scores.nlr, dreScore: scores.dre,
+                mlrScore: scores.mlr, compositeScore: scores.composite, extraScore: scores.extra,
+                totalScore: scores.total, riskLevel: level,
+                advice: scores.total < 50 ? '✅ 建议：常规随访，每年复查PSA，关注症状变化。' :
+                        (scores.total <= 80 ? '⚠️ 建议：1~3个月内复查PSA，或转诊县级医院进一步评估（如多参数MRI或重复PSA检测）。' :
+                        '🔴 建议：尽快转诊至三甲医院（莆田学院附属医院）泌尿外科，考虑前列腺穿刺活检明确诊断。')
             };
             addRecord(record);
-            // 可选：提醒用户已保存
-            // alert("记录已保存");
         }
 
-        // ---------- 重置表单 ----------
         function resetForm() {
-            checkIdInput.value = '';
-            patientNameInput.value = '';
-            ageInput.value = '65';
-            tpsaInput.value = '6.5';
-            fpsaInput.value = '1.2';
-            apDiam.value = '5.0';
-            lrDiam.value = '4.5';
-            paDiam.value = '3.0';
-            neutInput.value = '4.8';
-            lymphInput.value = '1.6';
-            monoInput.value = '0.5';
-            pltInput.value = '220';
-            dreSelect.value = 'normal';
-            bmiInput.value = '';
-            smokingInput.value = '';
-            htnCheck.checked = false;
-            dmCheck.checked = false;
-            hlpCheck.checked = false;
-            mriStatusSelect.value = '';
-            mriResultInput.value = '';
-            biopsyStatusSelect.value = '';
-            biopsyTimesSelect.value = '';
-            // 重新计算辅助显示
-            updateVolume();
-            updateDerivedFields();
-            // 刷新结果UI（不保存历史）
-            refreshUI();
-            // 隐藏动态子选项
+            checkIdInput.value = ''; patientNameInput.value = ''; ageInput.value = '65'; tpsaInput.value = '6.5';
+            fpsaInput.value = '1.2'; apDiam.value = '5.0'; lrDiam.value = '4.5'; paDiam.value = '3.0';
+            neutInput.value = '4.8'; lymphInput.value = '1.6'; monoInput.value = '0.5'; pltInput.value = '220';
+            dreSelect.value = 'normal'; bmiInput.value = ''; smokingInput.value = '';
+            htnCheck.checked = false; dmCheck.checked = false; hlpCheck.checked = false;
+            mriStatusSelect.value = ''; mriResultInput.value = ''; biopsyStatusSelect.value = ''; biopsyTimesSelect.value = '';
+            updateVolume(); updateDerivedFields(); refreshUI();
             if (mriResultDiv) mriResultDiv.style.display = 'none';
             if (biopsyTimesDiv) biopsyTimesDiv.style.display = 'none';
         }
 
-        // ---------- MRI/活检子控件显示 ----------
         function toggleMriResult() {
             if (mriStatusSelect.value === 'yes') {
                 mriResultDiv.style.display = 'block';
@@ -909,7 +752,6 @@
         function toggleBiopsyTimes() {
             if (biopsyStatusSelect.value === 'yes') {
                 biopsyTimesDiv.style.display = 'block';
-                if (biopsyTimesSelect.value === '') biopsyTimesSelect.value = '';
             } else {
                 biopsyTimesDiv.style.display = 'none';
                 biopsyTimesSelect.value = '';
@@ -922,32 +764,29 @@
 
         // ---------- 事件绑定 ----------
         document.getElementById('calcBtn').addEventListener('click', computeAndSave);
-        document.getElementById('resetBtn').addEventListener('click', resetForm);
+        document.getElementById('aiPredictBtn').addEventListener('click', predictWithAI);
+
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            if (confirm('确定要清空所有输入内容吗？此操作不可撤销。')) resetForm();
+        });
+
+        document.getElementById('printBtn').addEventListener('click', () => { window.print(); });
         document.getElementById('historyBtn').addEventListener('click', () => { displayHistory(); document.getElementById('historyModal').style.display = 'flex'; });
         document.getElementById('downloadHistoryBtn').addEventListener('click', exportHistoryToCSV);
         document.getElementById('closeHistoryBtn').addEventListener('click', () => { document.getElementById('historyModal').style.display = 'none'; });
         document.getElementById('clearHistoryBtn').addEventListener('click', () => { if(confirm('确定清空所有历史记录吗？')) clearAllHistory(); });
 
-        // 所有输入只触发刷新UI（不保存记录）
+        // 绑定输入事件
         const volumeInputs = [apDiam, lrDiam, paDiam];
-        volumeInputs.forEach(inp => inp.addEventListener('input', () => {
-            updateVolume();
-            updateDerivedFields();
-            refreshUI();
-        }));
+        volumeInputs.forEach(inp => inp.addEventListener('input', () => { updateVolume(); updateDerivedFields(); refreshUI(); }));
         const otherInputs = [ageInput, tpsaInput, neutInput, lymphInput, monoInput, fpsaInput, dreSelect,
                              bmiInput, smokingInput, htnCheck, dmCheck, hlpCheck, mriResultInput, biopsyTimesSelect];
-        otherInputs.forEach(inp => inp.addEventListener('input', () => {
-            updateDerivedFields();
-            refreshUI();
-        }));
-        // 复选框变化
+        otherInputs.forEach(inp => inp.addEventListener('input', () => { updateDerivedFields(); refreshUI(); }));
         htnCheck.addEventListener('change', refreshUI);
         dmCheck.addEventListener('change', refreshUI);
         hlpCheck.addEventListener('change', refreshUI);
         mriResultInput.addEventListener('input', refreshUI);
         biopsyTimesSelect.addEventListener('input', refreshUI);
-        // mriStatusSelect / biopsyStatusSelect 已有 change 事件中调用了 refreshUI
 
         // 初始化
         updateVolume();
