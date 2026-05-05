@@ -1,6 +1,7 @@
 ﻿from flask import Flask, request, jsonify
 from flask_cors import CORS
 import joblib
+import pandas as pd
 import numpy as np
 import sklearn
 import traceback
@@ -10,11 +11,9 @@ app = Flask(__name__)
 CORS(app)
 
 print(f"Scikit-learn version: {sklearn.__version__}")
-
 model = joblib.load("pca_screening_model_rf_calibrated.pkl")
 print("Model loaded successfully.")
 
-# 模型期望的特征顺序（从日志获得）
 EXPECTED_FEATURES = [
     'age', 'tpsa', 'PV', 'PSAD', 'NLR', 'DRE',
     'BMI', 'hypertension', 'diabetes', 'hyperlipidemia', 'MRI'
@@ -27,39 +26,33 @@ def predict():
 
     data = request.get_json()
     try:
-        # 1. 确保 DRE 是数字（前端可能发字符串）
+        # 1. 将前端的 DRE 字符串转为数字
         if 'DRE' in data and isinstance(data['DRE'], str):
             dre_map = {'normal': 0, 'suspicious': 1, 'hard': 2}
             data['DRE'] = dre_map.get(data['DRE'], 0)
 
-        # 2. 严格按照模型期望的顺序，提取数值并构建 NumPy 数组
-        feature_values = []
+        # 2. 构建 DataFrame，确保列名和顺序与模型训练时完全一致
+        df = pd.DataFrame([data])
         for col in EXPECTED_FEATURES:
-            val = data.get(col, 0)          # 缺失的列填 0
-            try:
-                val = float(val)            # 强制转为浮点数
-            except (ValueError, TypeError):
-                val = 0.0
-            feature_values.append(val)
-        
-        X = np.array([feature_values], dtype=np.float64)
+            if col not in df.columns:
+                df[col] = 0
+        df = df[EXPECTED_FEATURES]
+        df = df.astype(np.float64).fillna(0)
 
-        # 可选：打印数组供日志查看
-        print("Input array:", X)
+        # 3. 关键步骤：显式重新包装为 DataFrame，防止被内部转换为 numpy 数组
+        #    这是为了解决“仅支持 pandas DataFrames 使用字符串指定列”的错误
+        df = pd.DataFrame(df, columns=EXPECTED_FEATURES)
 
-        # 3. 直接用数组预测
-        proba = model.predict_proba(X)[0, 1]
+        # 4. 预测
+        proba = model.predict_proba(df)[0, 1]
 
-        # 4. 风险等级
+        # 5. 风险分级
         if proba < 0.4:
-            level = '低风险'
-            advice = 'AI建议：常规随访，每年复查PSA，关注症状变化。'
+            level, advice = '低风险', 'AI建议：常规随访，每年复查PSA，关注症状变化。'
         elif proba < 0.7:
-            level = '中风险'
-            advice = 'AI建议：1~3个月内复查PSA，或结合多参数MRI进一步评估。'
+            level, advice = '中风险', 'AI建议：1~3个月内复查PSA，或结合多参数MRI进一步评估。'
         else:
-            level = '高风险'
-            advice = 'AI建议：尽快转诊泌尿外科，考虑前列腺穿刺活检。'
+            level, advice = '高风险', 'AI建议：尽快转诊泌尿外科，考虑前列腺穿刺活检。'
 
         return jsonify({
             'probability': round(float(proba), 4),
